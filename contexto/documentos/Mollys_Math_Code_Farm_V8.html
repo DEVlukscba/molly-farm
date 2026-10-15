@@ -1,0 +1,919 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>🐄 Molly's Math &amp; Code Farm — Nivel 8</title>
+<style>
+:root {
+  --green:  #2E7D32; --lt-green:  #E8F5E9;
+  --brown:  #5D4037; --lt-brown:  #EFEBE9;
+  --yellow: #F9A825; --lt-yellow: #FFFDE7;
+  --orange: #E65100; --lt-orange: #FFF3E0;
+  --blue:   #1565C0; --lt-blue:   #E3F2FD;
+  --pink:   #C2185B; --lt-pink:   #FCE4EC;
+  --purple: #6A1B9A; --lt-purple: #F3E5F5;
+  --red:    #B71C1C; --lt-red:    #FFEBEE;
+  --teal:   #00695C; --lt-teal:   #E0F2F1;
+  --accent: #6D4C41;
+  --lt-acc: #EFEBE9;
+  --dark-acc: #3E2723;
+}
+* { box-sizing:border-box; margin:0; padding:0; }
+body {
+  font-family:'Arial Rounded MT Bold','Comic Sans MS',Arial,sans-serif;
+  background:linear-gradient(135deg,#EFEBE9 0%,#FFFDE7 50%,#F1F8E9 100%);
+  min-height:100vh; padding-bottom:40px;
+}
+
+/* HEADER */
+#header {
+  background:linear-gradient(90deg,#3E2723,#A1662F);
+  color:white; padding:12px 20px;
+  display:flex; align-items:center; justify-content:space-between; flex-wrap:wrap; gap:6px;
+  box-shadow:0 3px 8px rgba(0,0,0,.22);
+  position:sticky; top:0; z-index:100;
+}
+#header h1 { font-size:1.2em; }
+#stars-bar  { display:flex; gap:4px; align-items:center; }
+.star { font-size:1.6em; filter:grayscale(1) opacity(.4); transition:all .3s; }
+.star.lit { filter:none; transform:scale(1.2); }
+#score-text { color:#FFE0B2; font-size:.9em; margin-left:8px; }
+
+/* SCREENS */
+.screen { display:none; max-width:780px; margin:24px auto; padding:0 16px; }
+.screen.active { display:block; }
+
+/* CARD */
+.card {
+  background:white; border-radius:24px; padding:28px 24px;
+  box-shadow:0 6px 24px rgba(0,0,0,.1);
+  text-align:center; position:relative; overflow:hidden;
+}
+.card::before { content:''; position:absolute; top:0; left:0; right:0; height:6px; }
+.card.act-tens2::before   { background:linear-gradient(90deg,#004D40,#26A69A); }
+.card.act-mixed::before   { background:linear-gradient(90deg,#1B5E20,#66BB6A); }
+.card.act-clock1h::before { background:linear-gradient(90deg,#1A237E,#7986CB); }
+.card.act-basket::before  { background:linear-gradient(90deg,#BF360C,#FF7043); }
+.card.act-days::before    { background:linear-gradient(90deg,#880E4F,#F06292); }
+.card.act-missletter::before { background:linear-gradient(90deg,#1565C0,#42A5F5); }
+.card.act-params2::before { background:linear-gradient(90deg,#4A148C,#AB47BC); }
+.card.act-swap::before    { background:linear-gradient(90deg,#E65100,#FFA000); }
+
+/* BADGES */
+.act-badge {
+  display:inline-block; padding:6px 18px; border-radius:20px;
+  font-size:.85em; font-weight:bold; color:white; margin-bottom:10px;
+}
+.card.act-tens2   .act-badge { background:#004D40; }
+.card.act-mixed   .act-badge { background:#1B5E20; }
+.card.act-clock1h .act-badge { background:#1A237E; }
+.card.act-basket  .act-badge { background:#BF360C; }
+.card.act-days    .act-badge { background:#880E4F; }
+.card.act-missletter .act-badge { background:#1565C0; }
+.card.act-params2 .act-badge { background:#4A148C; }
+.card.act-swap    .act-badge { background:#E65100; }
+
+.level-badge {
+  position:absolute; top:14px; right:16px;
+  background:linear-gradient(135deg,#3E2723,#A1662F);
+  color:white; border-radius:12px; padding:4px 12px; font-size:.78em; font-weight:bold;
+}
+
+/* PROGRESS */
+.progress-bar { background:#EEE; border-radius:10px; height:10px; margin:10px 0 18px; overflow:hidden; }
+.progress-fill { height:100%; background:linear-gradient(90deg,#A1662F,#FDD835); border-radius:10px; transition:width .4s; }
+
+/* QUESTION TEXT */
+.question-text { font-size:1.2em; color:#333; margin-bottom:16px; line-height:1.4; }
+.question-text .es { color:var(--brown); }
+.question-text .en { color:var(--accent); font-size:.88em; font-style:italic; }
+.ask { font-size:.95em; color:#555; margin:8px 0; }
+
+/* OPTIONS */
+.options { display:flex; gap:12px; justify-content:center; flex-wrap:wrap; margin-top:16px; }
+.opt-btn {
+  padding:14px 20px; font-size:1.4em; border-radius:16px;
+  border:3px solid transparent; cursor:pointer; transition:all .18s;
+  background:var(--lt-yellow); min-width:80px; font-family:inherit;
+}
+.opt-btn:hover { transform:scale(1.08); box-shadow:0 4px 12px rgba(0,0,0,.15); }
+.opt-btn.correct, .pick.correct { background:#C8E6C9!important; border-color:#388E3C!important; transform:scale(1.04); }
+.opt-btn.wrong,   .pick.wrong   { background:#FFCDD2!important; border-color:#C62828!important; }
+.opt-btn:disabled, .pick:disabled { cursor:default; }
+
+/* 1. TENS & ONES */
+.tens-box {
+  display:inline-flex; gap:18px; align-items:flex-end; justify-content:center; flex-wrap:wrap;
+  background:var(--lt-teal); border:3px solid #80CBC4; border-radius:18px; padding:16px 20px; margin:10px 0;
+}
+.tens-group { text-align:center; }
+.tens-label { font-size:.8em; color:#00695C; font-weight:bold; margin-top:6px; }
+.ten-bar { display:inline-flex; flex-direction:column; gap:1px; margin:0 3px; font-size:.95em; line-height:1.05;
+  background:white; border:2px solid #4DB6AC; border-radius:10px; padding:3px 4px; }
+.ones { font-size:1.9em; letter-spacing:2px; line-height:1.3; max-width:180px; }
+.tens-hint { font-size:.8em; color:#888; font-style:italic; margin:4px 0; }
+.big-num { font-size:4em; font-weight:bold; color:var(--teal); background:var(--lt-teal); border:4px solid #80CBC4;
+  border-radius:24px; display:inline-block; padding:2px 30px; margin:8px 0; }
+.rep-btn { background:white; border:3px solid #80CBC4; border-radius:16px; padding:10px 14px; cursor:pointer;
+  font-family:inherit; transition:all .18s; min-width:150px; }
+.rep-btn:hover { transform:scale(1.05); border-color:var(--teal); }
+.rep-tens { font-size:1.5em; line-height:1.3; }
+.rep-ones { font-size:1.3em; line-height:1.3; }
+.rep-cap  { font-size:.75em; color:#777; margin-top:4px; }
+
+/* 2. MIXED */
+.mx-wrap { display:flex; gap:12px; justify-content:center; align-items:center; flex-wrap:wrap; margin:12px 0; }
+.mx-group { background:var(--lt-green); border:3px solid #A5D6A7; border-radius:16px; padding:10px 14px; max-width:320px; }
+.mx-group.arriving { background:#FFF8E1; border:3px dashed #FFB300; }
+.mx-group.leaving  { background:var(--lt-red); border:3px solid #EF9A9A; }
+.mx-label { font-size:.85em; font-weight:bold; color:#555; margin-bottom:4px; }
+.mx-animals { font-size:1.9em; line-height:1.3; }
+.mx-sign { font-size:2.2em; font-weight:bold; }
+.mx-sign.plus { color:var(--green); } .mx-sign.minus { color:var(--red); }
+.animal { display:inline-block; position:relative; }
+.animal.gone { opacity:.25; }
+.animal.gone::after { content:'❌'; position:absolute; top:-4px; right:-4px; font-size:.45em; }
+
+/* 3. CLOCK */
+.clock-wrap { text-align:center; margin:10px 0; }
+.plus1 { display:inline-block; background:#E8EAF6; border:3px dashed #7986CB; color:#1A237E; border-radius:14px;
+  padding:6px 16px; font-weight:bold; margin:6px 0; }
+
+/* 4. BASKET */
+.basket-row { display:flex; gap:12px; justify-content:center; align-items:center; flex-wrap:wrap; margin:12px 0; }
+.basket-item { background:var(--lt-yellow); border:3px solid #FFE082; border-radius:18px; padding:12px 16px; min-width:140px; }
+.basket-name { font-size:.9em; color:#555; font-weight:bold; margin-bottom:6px; }
+.basket-coins { font-size:1.6em; line-height:1.4; }
+.basket-price { font-size:.95em; color:#555; font-weight:bold; margin-top:4px; }
+.basket-plus { font-size:2.2em; color:var(--orange); font-weight:bold; }
+
+/* 5. DAYS */
+.days-box { background:#FCE4EC; border:3px solid #F48FB1; border-radius:18px; padding:14px 18px; margin:12px auto; max-width:480px; }
+.days-title { font-size:1.05em; font-weight:bold; color:#C2185B; margin-bottom:8px; }
+.days-rule { font-size:.95em; color:#555; margin-bottom:10px; }
+.days-slots { font-size:1.8em; line-height:1.4; }
+.day-group { display:inline-block; border:2px dashed #F06292; border-radius:12px; padding:2px 6px; margin:3px; background:white; }
+.days-legend { font-size:.8em; color:#777; margin-top:6px; }
+
+/* 6. MISSING LETTER */
+.ml-emoji { font-size:5em; display:block; }
+.ml-word { display:flex; gap:8px; justify-content:center; margin:10px 0; }
+.ml-cell { width:62px; height:72px; border-radius:14px; background:var(--lt-blue); border:3px solid #90CAF9;
+  display:flex; align-items:center; justify-content:center; font-size:2.4em; font-weight:bold; color:var(--brown); }
+.ml-cell.gap { background:var(--lt-yellow); border:3px dashed var(--yellow); color:#CCC; }
+.letter-btn {
+  padding:14px 24px; font-size:2em; font-weight:bold; border-radius:16px;
+  border:3px solid #90CAF9; background:var(--lt-blue); color:var(--blue);
+  cursor:pointer; transition:all .18s; font-family:inherit; min-width:80px;
+}
+.letter-btn:hover { transform:scale(1.1); border-color:var(--blue); }
+
+/* 7. PARAMS 2 */
+.func-block { background:#F3E5F5; border:3px solid #CE93D8; border-radius:18px; padding:14px 18px; margin:10px auto; text-align:left; max-width:480px; }
+.func-block-title { display:inline-block; background:#6A1B9A; color:white; padding:4px 16px; border-radius:12px; font-size:.95em; font-weight:bold; margin-bottom:10px; }
+.param { background:#FFD54F; color:#4A148C; border-radius:8px; padding:0 8px; margin:0 1px; }
+.param.p2 { background:#80DEEA; color:#004D40; }
+.func-step-row { display:flex; align-items:center; gap:8px; margin:5px 0; }
+.func-step-emoji { font-size:1.4em; }
+.func-step-text { font-size:.92em; color:#333; }
+.call-line { display:inline-block; margin:8px 0; background:#4A148C; color:white; padding:8px 18px; border-radius:14px; font-size:1.15em; font-family:'Courier New',monospace; font-weight:bold; }
+.result-pic { font-size:2em; background:#FFF8E1; border:3px dashed #FFB300; border-radius:16px; display:inline-block; padding:8px 18px; margin:8px 0; }
+.func-opts { display:flex; gap:12px; justify-content:center; flex-wrap:wrap; margin-top:12px; }
+.func-opt { background:white; border:3px solid #CE93D8; border-radius:14px; padding:12px 16px; cursor:pointer; transition:all .18s; font-family:inherit; min-width:110px; }
+.func-opt:hover { transform:scale(1.06); border-color:#6A1B9A; }
+.func-opt .fo-emoji { font-size:1.5em; display:block; }
+.func-opt .fo-label { font-size:.85em; color:#555; margin-top:4px; font-family:'Courier New',monospace; font-weight:bold; }
+
+/* 8. SWAP */
+.sw-steps { display:flex; flex-direction:column; gap:8px; margin:12px auto; max-width:480px; }
+.sw-step { display:flex; align-items:center; gap:10px; padding:10px 14px; border-radius:12px;
+  background:#FFFDE7; border:2px solid #FFE082; cursor:pointer; font-family:inherit; text-align:left; transition:all .18s; width:100%; }
+.sw-step:hover { transform:scale(1.03); border-color:var(--orange); }
+.sw-step.selected { background:#FFE0B2; border:3px solid var(--orange); }
+.sw-num { background:#FF8F00; color:white; border-radius:50%; width:28px; height:28px; display:flex; align-items:center; justify-content:center; font-size:.85em; font-weight:bold; flex-shrink:0; }
+.sw-emoji { font-size:1.6em; }
+.sw-text { font-size:.95em; color:#333; flex:1; }
+.sw-hint { font-size:.85em; color:#888; margin-top:4px; }
+
+/* PARENT GUIDE */
+.parent-guide-toggle {
+  display:inline-flex; align-items:center; gap:6px;
+  background:#FFF8E1; border:2px solid #FFD54F; border-radius:12px;
+  padding:7px 16px; font-size:.88em; color:#5D4037;
+  cursor:pointer; margin-bottom:10px; font-family:inherit; transition:all .18s;
+}
+.parent-guide-toggle:hover { background:#FFE082; }
+.parent-guide-box {
+  background:#FFFDE7; border:2px solid #FFD54F; border-radius:16px;
+  padding:14px 16px; margin-bottom:14px; text-align:left;
+  font-size:.87em; line-height:1.55; color:#4E342E; display:none;
+}
+.parent-guide-box.open { display:block; }
+.parent-guide-box strong { color:#E65100; }
+.parent-guide-box .tip {
+  margin-top:8px; padding:8px 12px;
+  background:#E8F5E9; border-left:4px solid #388E3C;
+  border-radius:0 10px 10px 0; color:#1B5E20; font-style:italic;
+}
+
+/* FEEDBACK */
+#feedback {
+  font-size:1.3em; font-weight:bold; padding:12px 20px;
+  border-radius:14px; margin:14px 0; display:none; animation:popIn .3s ease; text-align:center;
+}
+#feedback.correct { background:#C8E6C9; color:var(--green); }
+#feedback.wrong   { background:#FFCDD2; color:var(--red); }
+@keyframes popIn { 0%{transform:scale(.7);opacity:0} 80%{transform:scale(1.06)} 100%{transform:scale(1);opacity:1} }
+
+/* NAV */
+.nav-row { display:flex; gap:12px; justify-content:center; margin-top:18px; }
+.nav-btn {
+  padding:12px 28px; font-size:1.0em; font-weight:bold;
+  border-radius:14px; border:none; cursor:pointer; font-family:inherit; transition:all .18s;
+}
+.nav-btn:hover { transform:translateY(-2px); box-shadow:0 4px 10px rgba(0,0,0,.15); }
+.btn-next    { background:var(--accent); color:white; }
+.btn-prev    { background:#EEE; color:#555; }
+.btn-restart { background:var(--yellow); color:var(--brown); }
+.btn-next:disabled { background:#CCC; cursor:default; transform:none; box-shadow:none; }
+
+/* WELCOME */
+#welcome-screen .card { background:linear-gradient(135deg,#EFEBE9,#FFFDE7,#F1F8E9); }
+.welcome-title { font-size:2.2em; color:var(--accent); margin-bottom:6px; }
+.level-pill {
+  display:inline-block;
+  background:linear-gradient(135deg,#3E2723,#A1662F);
+  color:white; border-radius:20px; padding:6px 20px; font-size:1em; margin:8px 0 14px;
+}
+.activity-list { display:grid; grid-template-columns:1fr 1fr; gap:10px; margin:16px 0; text-align:left; }
+.act-item { padding:10px 14px; border-radius:14px; font-size:.93em; color:#333; }
+.start-btn {
+  background:linear-gradient(135deg,#3E2723,#A1662F);
+  color:white; border:none; padding:18px 50px; font-size:1.35em; font-weight:bold;
+  border-radius:20px; cursor:pointer; margin-top:10px; font-family:inherit;
+  transition:all .2s; box-shadow:0 4px 14px rgba(62,39,35,.35);
+}
+.start-btn:hover { transform:scale(1.05); }
+
+/* FINAL */
+#final-screen .card { background:linear-gradient(135deg,#EFEBE9,#C8E6C9,#FFF9C4); }
+.final-big   { font-size:4em; margin:10px 0; }
+.final-title { font-size:2em; font-weight:bold; color:var(--accent); }
+.final-sub   { font-size:1.1em; color:var(--brown); margin:10px 0; }
+.medals      { font-size:2.4em; letter-spacing:8px; margin:14px 0; }
+#confetti-canvas { position:fixed; top:0; left:0; width:100%; height:100%; pointer-events:none; z-index:9999; }
+
+@media (max-width:520px){
+  .activity-list { grid-template-columns:1fr; }
+  .card { padding:24px 14px; }
+  .level-badge { position:static; display:inline-block; margin-bottom:8px; }
+  .ml-cell { width:50px; height:60px; font-size:2em; }
+}
+</style>
+</head>
+<body>
+<canvas id="confetti-canvas"></canvas>
+
+<div id="header">
+  <h1>🐄 Molly's Math &amp; Code Farm — 🌻 Nivel 8</h1>
+  <div id="stars-bar">
+    <span class="star" id="s1">⭐</span><span class="star" id="s2">⭐</span>
+    <span class="star" id="s3">⭐</span><span class="star" id="s4">⭐</span>
+    <span class="star" id="s5">⭐</span><span class="star" id="s6">⭐</span>
+    <span class="star" id="s7">⭐</span><span class="star" id="s8">⭐</span>
+    <span id="score-text">0 / 0</span>
+  </div>
+</div>
+
+<!-- WELCOME -->
+<div id="welcome-screen" class="screen active">
+  <div class="card">
+    <div class="welcome-title">🐄 ¡Nivel 8, Elena! 🌻</div>
+    <div class="level-pill">🌻 NIVEL 8 / LEVEL 8 🌻</div>
+    <div style="font-size:.95em;color:var(--brown);margin-bottom:8px">¡La granja está en plena cosecha! / Harvest time on the farm!</div>
+    <span style="font-size:3.2em;display:block;margin:8px 0">🐄🌻🐷🌻🐑🌻🐔🌻🐴</span>
+    <div class="activity-list">
+      <div class="act-item" style="background:#E0F2F1">🔢 Decenas hasta 50 <span style="font-size:.8em;color:#888">+difícil</span></div>
+      <div class="act-item" style="background:#E8F5E9">➕➖ ¿Llegan o se van? <span style="font-size:.8em;color:#888">+difícil</span></div>
+      <div class="act-item" style="background:#E8EAF6">⏰ ¿Qué hora será? <span style="font-size:.8em;color:#888">+difícil</span></div>
+      <div class="act-item" style="background:#FBE9E7">🧺 Dos compras <span style="font-size:.8em;color:#888">+difícil</span></div>
+      <div class="act-item" style="background:#FCE4EC">📅 ¿En cuántos días? <span style="font-size:.8em;color:#888">+difícil</span></div>
+      <div class="act-item" style="background:#E3F2FD">🔤 La letra que falta <span style="font-size:.8em;color:#888">+difícil</span></div>
+      <div class="act-item" style="background:#F3E5F5">⚙️ Funciones con 2 datos <span style="font-size:.8em;color:#888">+difícil</span></div>
+      <div class="act-item" style="background:#FFF3E0">🔄 Pasos cambiados <span style="font-size:.8em;color:#888">+difícil</span></div>
+    </div>
+    <button class="start-btn" onclick="startGame()">¡Empezar Nivel 8! 🚀🌻</button>
+  </div>
+</div>
+
+<!-- GAME -->
+<div id="game-screen" class="screen">
+  <div id="activity-container"></div>
+  <div id="feedback"></div>
+  <div class="nav-row">
+    <button class="nav-btn btn-prev" onclick="prevActivity()">◀ Atrás</button>
+    <button class="nav-btn btn-next" id="next-btn" onclick="nextQuestion()" disabled>Siguiente ▶</button>
+  </div>
+</div>
+
+<!-- FINAL -->
+<div id="final-screen" class="screen">
+  <div class="card">
+    <div class="final-big">🏆🌻🏆</div>
+    <div class="final-title">¡NIVEL 8 COMPLETADO! 🌻</div>
+    <div class="level-pill">🌻 LEVEL 8 COMPLETE 🌻</div>
+    <div class="medals" id="final-medals">⭐⭐⭐⭐⭐⭐⭐⭐</div>
+    <div class="final-sub" id="final-msg"></div>
+    <span style="font-size:3em;display:block;margin:14px 0">🐄🌻🐷🌻🐑🌻🐔🌻🐴🌻🐰</span>
+    <div class="final-sub">¡Molly está súper orgullosa de vos! 🐄🌻<br><em>Molly is so proud of you!</em></div>
+    <div class="nav-row">
+      <button class="nav-btn btn-restart" onclick="restartGame()">🔄 Jugar de nuevo</button>
+    </div>
+  </div>
+</div>
+
+<script>
+// ===================================================================
+// DATA — NIVEL 8
+// ===================================================================
+var ACTIVITIES = [
+
+  // ─── 1. DECENAS Y UNIDADES HASTA 50 ──────────────────────────────
+  {
+    id:'tens2', type:'tens2',
+    badge:'🔢 Matemáticas · Decenas hasta 50',
+    title:'¡Paquetes de 10 y sueltos! / Tens and ones!',
+    sub:'Leé el número… ¡y también armalo! / Read the number… and build it!',
+    guide:{
+      concept:'<strong>Valor posicional hasta 50, en los dos sentidos.</strong> En el Nivel 7 Elena miraba los paquetes y decía el número (hasta 31). Ahora llegamos hasta 45 y agregamos el camino inverso: le damos el número escrito y tiene que elegir el dibujo que lo forma. Hacer los dos sentidos (dibujo → número y número → dibujo) es lo que consolida la idea de decenas y unidades.',
+      tip:'Para el camino inverso: "En el 34, el primer número (3) nos dice cuántos paquetes de 10 y el segundo (4) cuántos sueltos." Señalar cada cifra con el dedo mientras lo dice ayuda mucho. Las trampas son otra vez los números "dados vuelta" (34 vs 43).'
+    },
+    questions:[
+      { mode:'read',  tens:2, ones:7, opts:[72,27,26], ans:27 },
+      { mode:'read',  tens:4, ones:2, opts:[42,24,41], ans:42 },
+      { mode:'build', num:34, opts:[{t:4,o:3},{t:3,o:4},{t:3,o:3}], ans:1 },
+      { mode:'build', num:45, opts:[{t:4,o:5},{t:5,o:4},{t:4,o:4}], ans:0 },
+    ]
+  },
+
+  // ─── 2. SUMA Y RESTA MEZCLADAS ───────────────────────────────────
+  {
+    id:'mixed', type:'mixed',
+    badge:'➕➖ Matemáticas · Suma y Resta hasta 20',
+    title:'¿Llegan o se van? / Arriving or leaving?',
+    sub:'¡Mirá bien el signo! / Look at the sign!',
+    guide:{
+      concept:'<strong>Suma y resta mezcladas.</strong> En el Nivel 6 resta hasta 20 y en el Nivel 7 suma hasta 16, cada una en su actividad. Ahora aparecen juntas y Elena tiene que mirar primero si los animales LLEGAN (+) o SE VAN (−). Decidir qué operación usar es una habilidad nueva y muy importante: es el primer paso para resolver problemas.',
+      tip:'Antes de contar, preguntá: "¿Llegan o se van? ¿Va a haber más o menos?" Que diga en voz alta "más" o "menos" antes de responder. Si dice "más", la respuesta tiene que ser un número más grande que el del principio: es un buen control.'
+    },
+    questions:[
+      { animal:'🐄', start:9,  op:'+', n:4, opts:[5,12,13], ans:13 },
+      { animal:'🐷', start:15, op:'-', n:6, opts:[9,10,21], ans:9  },
+      { animal:'🐑', start:11, op:'+', n:7, opts:[4,17,18], ans:18 },
+      { animal:'🐔', start:18, op:'-', n:9, opts:[8,9,10],  ans:9  },
+    ]
+  },
+
+  // ─── 3. ¿QUÉ HORA SERÁ EN 1 HORA? ────────────────────────────────
+  {
+    id:'clock1h', type:'clock1h',
+    badge:'⏰ Matemáticas · ¿Qué hora será?',
+    title:'¿Qué hora será en 1 hora? / What time will it be in 1 hour?',
+    sub:'Leé el reloj y sumá 1 hora / Read the clock and add 1 hour',
+    guide:{
+      concept:'<strong>Leer la hora y avanzar 1 hora.</strong> En el Nivel 7 Elena leyó horas en punto y "y media". Ahora, además de leer, tiene que pensar qué hora será una hora después. Es la primera vez que el reloj se usa para PLANIFICAR ("en una hora vamos a comer"), y repasa el "+1" con la aguja corta. Empezamos con dos preguntas solo de lectura para entrar en calor.',
+      tip:'"La aguja larga no cambia: si es en punto, sigue en punto; si es y media, sigue y media. Solo la aguja corta avanza un número." Usalo en la vida diaria: "Son las 4. ¿Qué hora será cuando volvamos de la plaza en 1 hora?"'
+    },
+    questions:[
+      { h:3,  m:30, mode:'now',   opts:['3:30','4:30','3:00'],   ans:0 },
+      { h:10, m:0,  mode:'now',   opts:['10:00','10:30','2:00'], ans:0 },
+      { h:5,  m:0,  mode:'plus1', opts:['5:00','6:00','7:00'],   ans:1 },
+      { h:7,  m:30, mode:'plus1', opts:['7:30','8:00','8:30'],   ans:2 },
+    ]
+  },
+
+  // ─── 4. DOS COMPRAS ──────────────────────────────────────────────
+  {
+    id:'basket', type:'basket',
+    badge:'🧺 Finanzas · Dos Compras',
+    title:'¡Molly compra dos cosas! / Molly buys two things!',
+    sub:'¿Cuánto paga en total? / How much does she pay in total?',
+    guide:{
+      concept:'<strong>Sumar precios: el total de la compra.</strong> En el Nivel 6 Elena comparó dinero vs precio y en el Nivel 7 calculó el vuelto. Ahora la canasta tiene DOS cosas y hay que sumar los precios para saber cuánto se paga. Es suma aplicada con totales hasta 10, más chicos a propósito para que el foco esté en la idea de "total de la compra". En la última pregunta, además, tiene que decidir si le alcanza.',
+      tip:'"La zanahoria cuesta 3 y la manzana cuesta 4. Juntamos todas las monedas de los precios y las contamos." Jugando a la tiendita en casa: poné dos productos con precio y que Elena junte las monedas para pagar los dos.'
+    },
+    questions:[
+      { items:[{n:'🥕 Zanahoria / Carrot',p:3},{n:'🍎 Manzana / Apple',p:4}], opts:[6,7,8], ans:7 },
+      { items:[{n:'🥚 Huevo / Egg',p:2},{n:'🥛 Leche / Milk',p:5}],        opts:[7,8,3], ans:7 },
+      { items:[{n:'🌽 Choclo / Corn',p:4},{n:'🍐 Pera / Pear',p:4}],        opts:[8,9,4], ans:8 },
+      { items:[{n:'🍦 Helado / Ice cream',p:6},{n:'🍪 Galleta / Cookie',p:3}], have:8, mode:'enough',
+        opts:['yes','no'], ans:'no' },
+    ]
+  },
+
+  // ─── 5. ¿EN CUÁNTOS DÍAS? ────────────────────────────────────────
+  {
+    id:'days', type:'days',
+    badge:'📅 Finanzas · ¿En cuántos días?',
+    title:'¡Molly ahorra todos los días lo mismo! / Molly saves the same every day!',
+    sub:'¿En cuántos días llega a la meta? / In how many days does she reach the goal?',
+    guide:{
+      concept:'<strong>Ahorro constante y agrupamiento.</strong> En el Nivel 7 calculamos cuánto falta para la meta. Ahora Molly guarda la misma cantidad cada día y preguntamos cuántos días tarda. Es una primera idea de "repartir en grupos iguales" (la base de la división), pero resuelta contando grupos: los lugares de la alcancía están agrupados por día. También repasa los saltos de 2 y de 5 de niveles anteriores.',
+      tip:'"Cada día Molly guarda 2. Cada cajita punteada es un día. ¿Cuántas cajitas hay?" Después se puede comprobar contando de 2 en 2: "dos, cuatro, seis… ¡llegamos en 3 días!". Con una alcancía real es muy lindo hacerlo de verdad durante una semana.'
+    },
+    questions:[
+      { per:2, goal:6,  prize:'🧸 Osito / Teddy',   opts:[2,3,4], ans:3 },
+      { per:2, goal:8,  prize:'⚽ Pelota / Ball',    opts:[3,4,5], ans:4 },
+      { per:5, goal:10, prize:'🪁 Barrilete / Kite', opts:[1,2,3], ans:2 },
+      { per:3, goal:9,  prize:'🚲 Bici / Bike',      opts:[2,3,4], ans:3 },
+    ]
+  },
+
+  // ─── 6. LA LETRA QUE FALTA ───────────────────────────────────────
+  {
+    id:'missletter', type:'missletter',
+    badge:'🔤 Lectura · La Letra que Falta',
+    title:'¡Falta una letra! / A letter is missing!',
+    sub:'¿Qué letra completa la palabra? / Which letter completes the word?',
+    guide:{
+      concept:'<strong>Completar palabras: primera letra y letra del medio.</strong> En el Nivel 6 Elena eligió la primera letra y en el Nivel 7 buscó la palabra que empieza con una letra. Ahora la palabra aparece con un hueco: en las primeras dos falta la PRIMERA letra (lo que ya conoce) y en las siguientes falta la del MEDIO, que suele ser una vocal. Es el paso previo a leer palabras cortas completas.',
+      tip:'"Digamos la palabra despacito estirando cada sonido: D-O-G… ¿qué sonido va en el hueco?" Las vocales del medio son más difíciles de escuchar que la primera letra: si se traba, decí la palabra con cada opción ("D-A-G… D-O-G… D-I-G") y que elija la que suena bien.'
+    },
+    questions:[
+      { emoji:'🐄', word:'COW', gap:0, opts:['K','C','S'], ans:1 },
+      { emoji:'🐷', word:'PIG', gap:0, opts:['P','B','D'], ans:0 },
+      { emoji:'🐶', word:'DOG', gap:1, opts:['A','I','O'], ans:2 },
+      { emoji:'🐱', word:'CAT', gap:1, opts:['A','E','U'], ans:0 },
+      { emoji:'🐔', word:'HEN', gap:1, opts:['O','E','A'], ans:1 },
+    ]
+  },
+
+  // ─── 7. FUNCIONES CON 2 DATOS ────────────────────────────────────
+  {
+    id:'params2', type:'params2',
+    badge:'⚙️ Programación · Funciones con 2 datos',
+    title:'¡La función recibe QUÉ y CUÁNTOS! / The function gets WHAT and HOW MANY!',
+    sub:'Primer dato = qué · Segundo dato = cuántos / First = what · Second = how many',
+    guide:{
+      concept:'<strong>Funciones con dos parámetros.</strong> En el Nivel 7 las funciones recibían un número: REGAR(3). Ahora reciben DOS datos separados por coma: QUÉ cosa y CUÁNTAS. DAR(🥕, 3) da 3 zanahorias; DAR(🌽, 2) da 2 choclos. Elena tiene que mirar los dos datos para no equivocarse: las opciones incorrectas tienen bien uno de los dos pero no el otro.',
+      tip:'Usá colores: "El dato amarillo dice QUÉ, el celeste dice CUÁNTOS." Juego en casa: "TRAER(🧸, 2)" → Elena trae 2 peluches. "APLAUDIR(🐸, 3)" → aplaude 3 veces como una rana. Después ella te da órdenes con dos datos.'
+    },
+    questions:[
+      {
+        func:{ name:'🍽️ DAR', p1:'qué', p2:'cuántos', steps:[{emoji:'🐴', text:'Darle al caballo <span class="param p2">cuántos</span> de <span class="param">qué</span> / Give the horse some food'}] },
+        call:['DAR','🥕',3],
+        ask:'¿Qué le da Molly al caballo? / What does Molly give the horse?',
+        opts:[{emoji:'🥕🥕🥕',label:'🥕 × 3'},{emoji:'🌽🌽🌽',label:'🌽 × 3'},{emoji:'🥕🥕',label:'🥕 × 2'}],
+        ans:0
+      },
+      {
+        func:{ name:'🌱 PLANTAR', p1:'qué', p2:'cuántos', steps:[{emoji:'🕳️', text:'Plantar <span class="param p2">cuántos</span> de <span class="param">qué</span> / Plant some seeds'}] },
+        call:['PLANTAR','🌷',4],
+        ask:'¿Qué plantó Molly? / What did Molly plant?',
+        opts:[{emoji:'🌻🌻🌻🌻',label:'🌻 × 4'},{emoji:'🌷🌷🌷',label:'🌷 × 3'},{emoji:'🌷🌷🌷🌷',label:'🌷 × 4'}],
+        ans:2
+      },
+      {
+        func:{ name:'🧺 JUNTAR', p1:'qué', p2:'cuántos', steps:[{emoji:'🧺', text:'Juntar <span class="param p2">cuántos</span> de <span class="param">qué</span> / Collect some things'}] },
+        call:['JUNTAR','🍎',2],
+        ask:'¿Qué hay en la canasta? / What is in the basket?',
+        opts:[{emoji:'🍎🍎',label:'🍎 × 2'},{emoji:'🥚🥚',label:'🥚 × 2'},{emoji:'🍎🍎🍎🍎',label:'🍎 × 4'}],
+        ans:0
+      },
+      {
+        func:{ name:'🍽️ DAR', p1:'qué', p2:'cuántos', steps:[{emoji:'🐔', text:'Darle a la gallina <span class="param p2">cuántos</span> de <span class="param">qué</span> / Give the hen some food'}] },
+        call:null, picture:'🐔 🌽🌽🌽🌽🌽',
+        ask:'La gallina recibió esto. ¿Qué función llamó Molly? / Which call did Molly make?',
+        opts:[{emoji:'🍽️',label:'DAR(🥕, 5)'},{emoji:'🍽️',label:'DAR(🌽, 5)'},{emoji:'🍽️',label:'DAR(🌽, 4)'}],
+        ans:1
+      },
+    ]
+  },
+
+  // ─── 8. PASOS CAMBIADOS DE LUGAR ─────────────────────────────────
+  {
+    id:'swap', type:'swap',
+    badge:'🔄 Programación · Pasos Cambiados',
+    title:'¡Dos pasos están cambiados de lugar! / Two steps are swapped!',
+    sub:'Tocá los 2 pasos que hay que dar vuelta / Tap the 2 steps to swap',
+    guide:{
+      concept:'<strong>Depuración (debug) de orden.</strong> En el Nivel 6 faltaba un paso y en el Nivel 7 sobraba uno. Ahora están todos los pasos correctos, pero DOS están en el lugar equivocado. Es un error más sutil: hay que pensar en el ORDEN, no solo en qué pasos van. Muchos errores reales de programación son exactamente así: todo está, pero en el orden incorrecto.',
+      tip:'"Leamos en orden. ¿En qué paso te da risa porque no se puede hacer todavía?" (ej: servir el jugo antes de licuarlo). Tocá uno y después el otro con el que se cambia. Si se equivoca, se pueden recortar los pasos en papelitos y ordenarlos en la mesa.'
+    },
+    questions:[
+      {
+        prompt:'🧃 Hacer un jugo / Make juice:',
+        steps:[
+          {emoji:'🍎', text:'Tomar la fruta / Take fruit'},
+          {emoji:'🥤', text:'Servir en el vaso / Pour in glass'},
+          {emoji:'🌀', text:'Licuar / Blend'},
+          {emoji:'😋', text:'¡Tomar el jugo! / Drink it!'},
+        ],
+        swap:[1,2]
+      },
+      {
+        prompt:'👟 Ponerse las zapatillas / Put on shoes:',
+        steps:[
+          {emoji:'👟', text:'Ponerse las zapatillas / Put on shoes'},
+          {emoji:'🧦', text:'Ponerse las medias / Put on socks'},
+          {emoji:'🎀', text:'Atar los cordones / Tie laces'},
+          {emoji:'🏃', text:'¡Salir a jugar! / Go play!'},
+        ],
+        swap:[0,1]
+      },
+      {
+        prompt:'🌱 Plantar una semilla / Plant a seed:',
+        steps:[
+          {emoji:'🕳️', text:'Hacer un pocito / Dig a hole'},
+          {emoji:'🌰', text:'Poner la semilla / Drop the seed'},
+          {emoji:'💧', text:'Regar / Water it'},
+          {emoji:'🤎', text:'Tapar con tierra / Cover with soil'},
+        ],
+        swap:[2,3]
+      },
+      {
+        prompt:'🥛 Ordeñar a Molly / Milk Molly:',
+        steps:[
+          {emoji:'🪣', text:'Tomar el balde / Get the bucket'},
+          {emoji:'🏠', text:'Llevar la leche a casa / Take milk home'},
+          {emoji:'🥛', text:'Ordeñar / Milk'},
+          {emoji:'🪑', text:'Sentarse junto a Molly / Sit by Molly'},
+        ],
+        swap:[1,3]
+      },
+    ]
+  }
+];
+
+// ===================================================================
+// STATE
+// ===================================================================
+var curAct=0, curQ=0, score=0, total=0, answered=false;
+var LEVEL='🌻 Nivel 8';
+var swapSel=[];
+
+function totalQuestions(){ return ACTIVITIES.reduce(function(s,a){return s+a.questions.length;},0); }
+function updateStars(){
+  var lit=Math.round(score/totalQuestions()*8);
+  for(var i=1;i<=8;i++) document.getElementById('s'+i).classList.toggle('lit', i<=lit);
+  document.getElementById('score-text').textContent=score+' / '+total;
+}
+
+// ===================================================================
+// NAVIGATION
+// ===================================================================
+function showScreen(id){
+  document.querySelectorAll('.screen').forEach(function(s){s.classList.remove('active');});
+  document.getElementById(id).classList.add('active');
+  window.scrollTo(0,0);
+}
+function startGame(){
+  curAct=0;curQ=0;score=0;total=0;answered=false;
+  updateStars(); showScreen('game-screen'); renderActivity();
+}
+function restartGame(){ showScreen('welcome-screen'); }
+function prevActivity(){
+  if(curAct>0){ curAct--;curQ=0;answered=false;clearFeedback();renderActivity(); }
+  else showScreen('welcome-screen');
+}
+function nextQuestion(){
+  if(!answered) return;
+  curQ++;answered=false;clearFeedback();
+  document.getElementById('next-btn').disabled=true;
+  var act=ACTIVITIES[curAct];
+  if(curQ>=act.questions.length){ curAct++;curQ=0; if(curAct>=ACTIVITIES.length){ showFinal();return; } }
+  renderActivity();
+}
+function showFinal(){
+  showScreen('final-screen');
+  document.getElementById('final-medals').textContent='⭐'.repeat(Math.max(1,Math.round(score/totalQuestions()*8)));
+  document.getElementById('final-msg').textContent=
+    score>=total*.8
+      ? '¡Excelente! / Excellent! 🌟 '+score+'/'+total+' correctas'
+      : '¡Muy bien! / Great job! 🌈 '+score+'/'+total+' correctas';
+  launchConfetti();
+}
+function clearFeedback(){
+  var f=document.getElementById('feedback'); f.style.display='none'; f.className='';
+}
+function showFeedback(ok,msg){
+  var f=document.getElementById('feedback');
+  f.textContent=(ok?'✅ ':'❌ ')+msg; f.className=ok?'correct':'wrong'; f.style.display='block';
+  if(ok) score++;
+  total++; answered=true; updateStars();
+  document.getElementById('next-btn').disabled=false;
+}
+function mark(sel, btn, ok, ansIdx){
+  var all=document.querySelectorAll(sel);
+  all.forEach(function(b){b.disabled=true;});
+  btn.classList.add(ok?'correct':'wrong');
+  if(!ok && all[ansIdx]) all[ansIdx].classList.add('correct');
+}
+
+// ===================================================================
+// PARENT GUIDE
+// ===================================================================
+function toggleGuide(){
+  var box=document.getElementById('guide-box'), btn=document.getElementById('guide-btn');
+  btn.textContent=box.classList.toggle('open')
+    ?'👨‍👩‍👧 Para papá y mamá  ▲'
+    :'👨‍👩‍👧 Para papá y mamá  ▼';
+}
+function renderGuide(g){
+  if(!g) return '';
+  return '<button class="parent-guide-toggle" id="guide-btn" onclick="toggleGuide()">👨‍👩‍👧 Para papá y mamá  ▼</button>'
+        +'<div class="parent-guide-box" id="guide-box"><div>'+g.concept+'</div><div class="tip">💡 '+g.tip+'</div></div>';
+}
+
+// ===================================================================
+// RENDER ACTIVITY
+// ===================================================================
+function renderActivity(){
+  var act=ACTIVITIES[curAct], q=act.questions[curQ];
+  swapSel=[];
+  var pct=((curQ/act.questions.length)*100).toFixed(0);
+  var html='<div class="card act-'+act.id+'">'
+    +'<span class="level-badge">'+LEVEL+'</span>'
+    +'<span class="act-badge">'+act.badge+'</span>'
+    +'<div class="progress-bar"><div class="progress-fill" style="width:'+pct+'%"></div></div>'
+    +renderGuide(act.guide)
+    +'<div class="question-text">'
+    +'<div class="es">'+act.title+'</div>'
+    +'<div class="en" style="margin-top:4px">'+act.sub+'</div>'
+    +'</div>';
+  switch(act.type){
+    case 'tens2':      html+=renderTens2(q);      break;
+    case 'mixed':      html+=renderMixed(q);      break;
+    case 'clock1h':    html+=renderClock1h(q);    break;
+    case 'basket':     html+=renderBasket(q);     break;
+    case 'days':       html+=renderDays(q);       break;
+    case 'missletter': html+=renderMissLetter(q); break;
+    case 'params2':    html+=renderParams2(q);    break;
+    case 'swap':       html+=renderSwap(q);       break;
+  }
+  html+='</div>';
+  document.getElementById('activity-container').innerHTML=html;
+}
+
+// Botones numéricos genéricos (respuesta = valor)
+function numOpts(opts,ans,prefix){
+  return '<div class="options">'+opts.map(function(o){
+    return '<button class="opt-btn" onclick="pickVal(this,'+o+','+ans+')">'+(prefix||'')+o+'</button>';
+  }).join('')+'</div>';
+}
+function pickVal(btn,chosen,ans){
+  var q=ACTIVITIES[curAct].questions[curQ];
+  mark('.opt-btn',btn,chosen===ans,q.opts.indexOf(ans));
+  showFeedback(chosen===ans, chosen===ans?'¡Correcto! '+ans+' 🌟':'Casi... la respuesta era '+ans);
+}
+
+// ─── 1. TENS 2 ───────────────────────────────────────────────────
+function tenBars(t){
+  var b='';
+  for(var i=0;i<t;i++) b+='<span class="ten-bar">'+Array(10).fill('🔵').join('<br>')+'</span>';
+  return b;
+}
+function renderTens2(q){
+  if(q.mode==='read'){
+    return '<div class="tens-box">'
+          +'<div class="tens-group"><div>'+tenBars(q.tens)+'</div><div class="tens-label">'+q.tens+' × 10</div></div>'
+          +'<div class="tens-group"><div class="ones">'+Array(q.ones).fill('🟡').join('')+'</div><div class="tens-label">'+q.ones+' sueltos / ones</div></div>'
+          +'</div>'
+          +'<div class="tens-hint">Cada columna 🔵 = 10 &nbsp;·&nbsp; 🟡 = 1</div>'
+          +'<div class="ask">¿Qué número es? / What number is it?</div>'
+          +numOpts(q.opts,q.ans);
+  }
+  var opts=q.opts.map(function(o,i){
+    return '<button class="rep-btn pick" onclick="pickRep(this,'+i+','+q.ans+')">'
+          +'<div class="rep-tens">'+Array(o.t).fill('🔟').join('')+'</div>'
+          +'<div class="rep-ones">'+Array(o.o).fill('🟡').join('')+'</div>'
+          +'<div class="rep-cap">'+o.t+' paquetes · '+o.o+' sueltos</div></button>';
+  }).join('');
+  return '<div class="ask">¿Qué dibujo forma este número? / Which picture makes this number?</div>'
+        +'<div class="big-num">'+q.num+'</div>'
+        +'<div class="tens-hint">🔟 = paquete de 10 / pack of 10 &nbsp;·&nbsp; 🟡 = 1</div>'
+        +'<div class="options">'+opts+'</div>';
+}
+function pickRep(btn,i,ans){
+  var q=ACTIVITIES[curAct].questions[curQ], c=q.opts[ans];
+  mark('.rep-btn',btn,i===ans,ans);
+  var why=q.num+' = '+c.t+' paquetes de 10 y '+c.o+' sueltos';
+  showFeedback(i===ans, i===ans?'¡Correcto! '+why+' 🌟':'Casi... '+why);
+}
+
+// ─── 2. MIXED ────────────────────────────────────────────────────
+function renderMixed(q){
+  var html='<div class="mx-wrap">';
+  if(q.op==='+'){
+    html+='<div class="mx-group"><div class="mx-label">Están / Here: '+q.start+'</div><div class="mx-animals">'+Array(q.start).fill(q.animal).join('')+'</div></div>'
+         +'<div class="mx-sign plus">+</div>'
+         +'<div class="mx-group arriving"><div class="mx-label">✨ Llegan / Arriving: '+q.n+'</div><div class="mx-animals">'+Array(q.n).fill(q.animal).join('')+'</div></div>';
+  } else {
+    var a='';
+    for(var i=0;i<q.start;i++) a+='<span class="animal'+(i<q.n?' gone':'')+'">'+q.animal+'</span>';
+    html+='<div class="mx-group leaving"><div class="mx-label">Había '+q.start+' / There were '+q.start+' &nbsp;<span class="mx-sign minus" style="font-size:1.2em">−</span> 👋 Se van / Leaving: '+q.n+'</div>'
+         +'<div class="mx-animals">'+a+'</div></div>';
+  }
+  html+='</div><div class="ask">¿Cuántos hay ahora? / How many now?</div>';
+  return html+numOpts(q.opts,q.ans);
+}
+
+// ─── 3. CLOCK +1h ────────────────────────────────────────────────
+function clockSVG(h,m){
+  var cx=110, cy=110, r=90;
+  var hourPos=h+(m===30?0.5:0);
+  var ha=(hourPos*30-90)*Math.PI/180;
+  var hx=(cx+52*Math.cos(ha)).toFixed(1), hy=(cy+52*Math.sin(ha)).toFixed(1);
+  var ma=(m*6-90)*Math.PI/180;
+  var mx=(cx+76*Math.cos(ma)).toFixed(1), my=(cy+76*Math.sin(ma)).toFixed(1);
+  var nums='', ticks='';
+  for(var n=1;n<=12;n++){
+    var a=(n*30-90)*Math.PI/180;
+    nums+='<text x="'+(cx+70*Math.cos(a)).toFixed(1)+'" y="'+(cy+70*Math.sin(a)).toFixed(1)
+        +'" text-anchor="middle" dominant-baseline="central" font-size="15" font-weight="bold" fill="#555" font-family="Arial">'+n+'</text>';
+  }
+  for(var t=0;t<60;t++){
+    var ta=(t*6-90)*Math.PI/180, inner=t%5===0?r-13:r-6;
+    ticks+='<line x1="'+(cx+r*Math.cos(ta)).toFixed(1)+'" y1="'+(cy+r*Math.sin(ta)).toFixed(1)
+         +'" x2="'+(cx+inner*Math.cos(ta)).toFixed(1)+'" y2="'+(cy+inner*Math.sin(ta)).toFixed(1)
+         +'" stroke="#DDD" stroke-width="'+(t%5===0?2:1)+'"/>';
+  }
+  return '<svg width="220" height="220" viewBox="0 0 220 220" style="display:block;margin:10px auto">'
+    +'<circle cx="'+cx+'" cy="'+cy+'" r="'+r+'" fill="white" stroke="#BCAAA4" stroke-width="5"/>'
+    +ticks+nums
+    +'<line x1="'+cx+'" y1="'+cy+'" x2="'+mx+'" y2="'+my+'" stroke="#555" stroke-width="3" stroke-linecap="round"/>'
+    +'<line x1="'+cx+'" y1="'+cy+'" x2="'+hx+'" y2="'+hy+'" stroke="#283593" stroke-width="7" stroke-linecap="round"/>'
+    +'<circle cx="'+cx+'" cy="'+cy+'" r="6" fill="#333"/>'
+    +'</svg>';
+}
+function renderClock1h(q){
+  var ask=q.mode==='plus1'
+    ?'<div class="plus1">⏩ + 1 hora / + 1 hour</div><div class="ask">¿Qué hora será? / What time will it be?</div>'
+    :'<div class="ask">¿Qué hora es ahora? / What time is it now?</div>';
+  var opts=q.opts.map(function(o,i){
+    return '<button class="opt-btn" onclick="pickClock(this,'+i+','+q.ans+')">'+o+'</button>';
+  }).join('');
+  return '<div class="clock-wrap">'+clockSVG(q.h,q.m)+'</div>'
+        +'<div style="font-size:.85em;color:#888;margin:4px 0">Aguja larga gris = minutos · Aguja corta azul = hora</div>'
+        +ask+'<div class="options">'+opts+'</div>';
+}
+function pickClock(btn,i,ans){
+  var q=ACTIVITIES[curAct].questions[curQ], c=q.opts[ans];
+  mark('.opt-btn',btn,i===ans,ans);
+  var now=q.h+':'+(q.m===30?'30':'00');
+  var msg=q.mode==='plus1'? 'Ahora son las '+now+' → en 1 hora serán las '+c : 'Son las '+c;
+  showFeedback(i===ans, i===ans?'¡Correcto! '+msg+' 🌟':'Casi... '+msg);
+}
+
+// ─── 4. BASKET ───────────────────────────────────────────────────
+function renderBasket(q){
+  var a=q.items[0], b=q.items[1];
+  function box(it){
+    return '<div class="basket-item"><div class="basket-name">'+it.n+'</div>'
+          +'<div class="basket-coins">'+Array(it.p).fill('🪙').join('')+'</div>'
+          +'<div class="basket-price">'+it.p+' 🪙</div></div>';
+  }
+  var html='<div class="basket-row">'+box(a)+'<div class="basket-plus">+</div>'+box(b)+'</div>';
+  if(q.mode==='enough'){
+    return html
+      +'<div class="ask">🐄 Molly tiene / has: <strong>'+Array(q.have).fill('🪙').join('')+' ('+q.have+')</strong></div>'
+      +'<div class="ask">¿Le alcanza para las DOS cosas? / Enough for BOTH?</div>'
+      +'<div class="options">'
+      +'<button class="opt-btn" style="font-size:1.1em" onclick="pickEnough(this,\'yes\')">✅ Sí alcanza<br><small>Yes</small></button>'
+      +'<button class="opt-btn" style="font-size:1.1em" onclick="pickEnough(this,\'no\')">❌ No alcanza<br><small>No</small></button>'
+      +'</div>';
+  }
+  return html+'<div class="ask">¿Cuánto paga en total? / How much in total?</div>'+numOpts(q.opts,q.ans,'🪙×');
+}
+function pickEnough(btn,ch){
+  var q=ACTIVITIES[curAct].questions[curQ];
+  var tot=q.items[0].p+q.items[1].p, ok=ch===q.ans;
+  mark('.opt-btn',btn,ok,q.opts.indexOf(q.ans));
+  var why='Las dos cuestan '+q.items[0].p+' + '+q.items[1].p+' = '+tot+' y Molly tiene '+q.have;
+  showFeedback(ok, ok?'¡Correcto! '+why+' 🌟':'Casi... '+why);
+}
+
+// ─── 5. DAYS ─────────────────────────────────────────────────────
+function renderDays(q){
+  var groups='';
+  for(var d=0; d<q.goal/q.per; d++) groups+='<span class="day-group">'+Array(q.per).fill('⚪').join('')+'</span>';
+  return '<div class="days-box">'
+        +'<div class="days-title">🐷 Meta / Goal: '+q.prize+' = '+q.goal+' 🪙</div>'
+        +'<div class="days-rule">Cada día guarda / Every day she saves: <strong>'+Array(q.per).fill('🪙').join('')+' ('+q.per+')</strong></div>'
+        +'<div class="days-slots">'+groups+'</div>'
+        +'<div class="days-legend">Cada cajita punteada = 1 día / Each dotted box = 1 day</div>'
+        +'</div>'
+        +'<div class="ask">¿En cuántos días llega? / How many days?</div>'
+        +numOpts(q.opts,q.ans,'📅 ');
+}
+
+// ─── 6. MISSING LETTER ───────────────────────────────────────────
+function renderMissLetter(q){
+  var cells=q.word.split('').map(function(ch,i){
+    return i===q.gap?'<div class="ml-cell gap">?</div>':'<div class="ml-cell">'+ch+'</div>';
+  }).join('');
+  var opts=q.opts.map(function(l,i){
+    return '<button class="letter-btn pick" onclick="pickMiss(this,'+i+','+q.ans+')">'+l+'</button>';
+  }).join('');
+  return '<span class="ml-emoji">'+q.emoji+'</span>'
+        +'<div class="ml-word">'+cells+'</div>'
+        +'<div class="ask">¿Qué letra falta? / Which letter is missing?</div>'
+        +'<div class="options">'+opts+'</div>';
+}
+function pickMiss(btn,i,ans){
+  var q=ACTIVITIES[curAct].questions[curQ];
+  mark('.letter-btn',btn,i===ans,ans);
+  var cells=document.querySelectorAll('.ml-cell.gap');
+  if(cells[0]){ cells[0].textContent=q.opts[ans]; cells[0].style.color='#2E7D32'; }
+  showFeedback(i===ans, i===ans?'¡Correcto! '+q.emoji+' '+q.word+' 🌟':'Casi... es '+q.emoji+' '+q.word);
+}
+
+// ─── 7. PARAMS 2 ─────────────────────────────────────────────────
+function renderParams2(q){
+  var f=q.func;
+  var steps=f.steps.map(function(s){
+    return '<div class="func-step-row"><span class="func-step-emoji">'+s.emoji+'</span><span class="func-step-text">'+s.text+'</span></div>';
+  }).join('');
+  var html='<div class="func-block"><div class="func-block-title">⚙️ '+f.name
+          +'(<span class="param">'+f.p1+'</span>, <span class="param p2">'+f.p2+'</span>)</div>'+steps+'</div>';
+  if(q.call){
+    html+='<div>Molly llama / Molly calls:</div>'
+         +'<div class="call-line">'+q.call[0]+'(<span class="param">'+q.call[1]+'</span>, <span class="param p2">'+q.call[2]+'</span>)</div>';
+  } else {
+    html+='<div class="result-pic">'+q.picture+'</div>';
+  }
+  var opts=q.opts.map(function(o,i){
+    return '<button class="func-opt pick" onclick="pickParam2(this,'+i+','+q.ans+')">'
+          +'<span class="fo-emoji">'+o.emoji+'</span><span class="fo-label">'+o.label+'</span></button>';
+  }).join('');
+  return html+'<div style="font-size:1.05em;color:var(--brown);margin:12px 0 6px"><strong>'+q.ask+'</strong></div>'
+        +'<div class="func-opts">'+opts+'</div>';
+}
+function pickParam2(btn,i,ans){
+  var q=ACTIVITIES[curAct].questions[curQ], c=q.opts[ans];
+  mark('.func-opt',btn,i===ans,ans);
+  var why=q.call? q.call[0]+'('+q.call[1]+', '+q.call[2]+') → '+c.emoji : c.label+' → '+q.picture;
+  showFeedback(i===ans, i===ans?'¡Correcto! '+why+' 🌟':'Casi... '+why);
+}
+
+// ─── 8. SWAP ─────────────────────────────────────────────────────
+function renderSwap(q){
+  var steps=q.steps.map(function(s,i){
+    return '<button class="sw-step pick" id="sw'+i+'" onclick="pickSwap('+i+')">'
+          +'<span class="sw-num">'+(i+1)+'</span><span class="sw-emoji">'+s.emoji+'</span>'
+          +'<span class="sw-text">'+s.text+'</span></button>';
+  }).join('');
+  return '<div style="font-size:1.05em;font-weight:bold;color:#555;margin-bottom:6px">'+q.prompt+'</div>'
+        +'<div class="sw-steps" id="sw-steps">'+steps+'</div>'
+        +'<div class="sw-hint" id="sw-hint">Elegí el primero… / Pick the first one…</div>';
+}
+function pickSwap(i){
+  if(answered) return;
+  var q=ACTIVITIES[curAct].questions[curQ];
+  var btn=document.getElementById('sw'+i);
+  if(swapSel.indexOf(i)>=0){ swapSel=swapSel.filter(function(x){return x!==i;}); btn.classList.remove('selected');
+    document.getElementById('sw-hint').textContent='Elegí el primero… / Pick the first one…'; return; }
+  swapSel.push(i); btn.classList.add('selected');
+  if(swapSel.length<2){ document.getElementById('sw-hint').textContent='¿Con cuál se cambia? / Swap with which one?'; return; }
+  var a=q.swap[0], b=q.swap[1];
+  var ok=(swapSel.indexOf(a)>=0 && swapSel.indexOf(b)>=0);
+  document.querySelectorAll('.sw-step').forEach(function(x){x.disabled=true; x.classList.remove('selected');});
+  // reordenar mostrando la secuencia correcta
+  var fixed=q.steps.slice(); var tmp=fixed[a]; fixed[a]=fixed[b]; fixed[b]=tmp;
+  document.getElementById('sw-steps').innerHTML=fixed.map(function(s,k){
+    var moved=(k===a||k===b);
+    return '<div class="sw-step'+(moved?' pick correct':'')+'"><span class="sw-num">'+(k+1)+'</span><span class="sw-emoji">'+s.emoji+'</span><span class="sw-text">'+s.text+'</span></div>';
+  }).join('');
+  document.getElementById('sw-hint').textContent='Así queda en orden / This is the right order';
+  showFeedback(ok, ok?'¡Correcto! Los cambiamos de lugar y ahora funciona 🐛🌟'
+                     :'Casi... los cambiados eran el '+(a+1)+' y el '+(b+1));
+}
+
+// ===================================================================
+// CONFETTI
+// ===================================================================
+function launchConfetti(){
+  var canvas=document.getElementById('confetti-canvas');
+  var ctx=canvas.getContext('2d');
+  canvas.width=window.innerWidth; canvas.height=window.innerHeight;
+  var pieces=Array.from({length:120},function(){
+    return { x:Math.random()*canvas.width, y:-20, r:Math.random()*10+4,
+      color:'hsl('+Math.floor(Math.random()*360)+',90%,60%)',
+      vx:(Math.random()-.5)*6, vy:Math.random()*4+2, alpha:1 };
+  });
+  function draw(){
+    ctx.clearRect(0,0,canvas.width,canvas.height);
+    pieces.forEach(function(p){
+      ctx.globalAlpha=Math.max(p.alpha,0); ctx.fillStyle=p.color;
+      ctx.beginPath(); ctx.arc(p.x,p.y,p.r,0,Math.PI*2); ctx.fill();
+      p.x+=p.vx; p.y+=p.vy; p.alpha-=0.008;
+    });
+    if(pieces.some(function(p){return p.alpha>0;})) requestAnimationFrame(draw);
+    else ctx.clearRect(0,0,canvas.width,canvas.height);
+  }
+  draw();
+}
+</script>
+</body>
+</html>

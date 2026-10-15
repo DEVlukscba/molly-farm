@@ -1,0 +1,879 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>🐄 Molly's Math & Code Farm — Nivel 2</title>
+<style>
+:root {
+  --green:  #2E7D32; --lt-green:  #E8F5E9;
+  --brown:  #5D4037; --lt-brown:  #EFEBE9;
+  --yellow: #F9A825; --lt-yellow: #FFFDE7;
+  --orange: #E65100; --lt-orange: #FFF3E0;
+  --blue:   #1565C0; --lt-blue:   #E3F2FD;
+  --pink:   #C2185B; --lt-pink:   #FCE4EC;
+  --purple: #6A1B9A; --lt-purple: #F3E5F5;
+  --red:    #B71C1C; --lt-red:    #FFEBEE;
+  --teal:   #00695C; --lt-teal:   #E0F2F1;
+  --cream:  #FFFDE7;
+}
+* { box-sizing: border-box; margin: 0; padding: 0; }
+body {
+  font-family: 'Arial Rounded MT Bold','Comic Sans MS',Arial,sans-serif;
+  background: linear-gradient(135deg,#F3E5F5 0%,#FFFDE7 50%,#E0F2F1 100%);
+  min-height: 100vh;
+  padding-bottom: 40px;
+}
+
+/* HEADER */
+#header {
+  background: linear-gradient(90deg,#6A1B9A,#AB47BC);
+  color: white;
+  padding: 12px 20px;
+  display: flex; align-items: center; justify-content: space-between;
+  box-shadow: 0 3px 8px rgba(0,0,0,.22);
+  position: sticky; top: 0; z-index: 100;
+}
+#header h1 { font-size: 1.25em; }
+#stars-bar  { display: flex; gap: 4px; align-items: center; }
+.star { font-size: 1.6em; filter: grayscale(1) opacity(.4); transition: all .3s; }
+.star.lit { filter: none; transform: scale(1.2); }
+#score-text { color: #E1BEE7; font-size: .9em; margin-left: 8px; }
+
+/* SCREENS */
+.screen { display: none; max-width: 780px; margin: 24px auto; padding: 0 16px; }
+.screen.active { display: block; }
+
+/* CARD */
+.card {
+  background: white; border-radius: 24px;
+  padding: 28px 24px;
+  box-shadow: 0 6px 24px rgba(0,0,0,.1);
+  text-align: center; position: relative; overflow: hidden;
+}
+.card::before {
+  content:''; position:absolute; top:0; left:0; right:0; height:6px;
+}
+.act-patterns  .card::before { background: linear-gradient(90deg,#E91E63,#FF9800); }
+.act-howmany   .card::before { background: linear-gradient(90deg,#1565C0,#0288D1); }
+.act-space     .card::before { background: linear-gradient(90deg,#2E7D32,#66BB6A); }
+.act-sums      .card::before { background: linear-gradient(90deg,#E65100,#FFA000); }
+.act-sequence  .card::before { background: linear-gradient(90deg,#6A1B9A,#AB47BC); }
+.act-loops     .card::before { background: linear-gradient(90deg,#00695C,#26A69A); }
+.act-truefalse .card::before { background: linear-gradient(90deg,#C2185B,#F06292); }
+.act-debug     .card::before { background: linear-gradient(90deg,#B71C1C,#EF5350); }
+
+/* ACT BADGE */
+.act-badge {
+  display:inline-block; padding:6px 18px; border-radius:20px;
+  font-size:.85em; font-weight:bold; color:white; margin-bottom:10px;
+}
+.act-patterns  .act-badge { background:#E91E63; }
+.act-howmany   .act-badge { background:#1565C0; }
+.act-space     .act-badge { background:#2E7D32; }
+.act-sums      .act-badge { background:#E65100; }
+.act-sequence  .act-badge { background:#6A1B9A; }
+.act-loops     .act-badge { background:#00695C; }
+.act-truefalse .act-badge { background:#C2185B; }
+.act-debug     .act-badge { background:#B71C1C; }
+
+/* LEVEL BADGE */
+.level-badge {
+  position:absolute; top:14px; right:16px;
+  background:linear-gradient(135deg,#6A1B9A,#AB47BC);
+  color:white; border-radius:12px; padding:4px 12px;
+  font-size:.78em; font-weight:bold;
+}
+
+/* PROGRESS */
+.progress-bar { background:#EEE; border-radius:10px; height:10px; margin:10px 0 18px; overflow:hidden; }
+.progress-fill { height:100%; background:linear-gradient(90deg,#AB47BC,#FDD835); border-radius:10px; transition:width .4s; }
+
+/* QUESTION */
+.question-text { font-size:1.2em; color:#333; margin-bottom:16px; line-height:1.4; }
+.question-text .es { color:var(--brown); }
+.question-text .en { color:var(--purple); font-size:.88em; }
+.emoji-row { font-size:2.6em; letter-spacing:4px; margin:14px 0; line-height:1.3; }
+.emoji-big { font-size:5em; display:block; margin:10px 0; }
+.blank-slot {
+  display:inline-block; width:60px; height:60px;
+  background:var(--lt-yellow); border:3px dashed var(--yellow);
+  border-radius:12px; vertical-align:middle; font-size:.9em; line-height:60px; color:#AAA;
+}
+
+/* OPTIONS */
+.options { display:flex; gap:12px; justify-content:center; flex-wrap:wrap; margin-top:16px; }
+.opt-btn {
+  padding:14px 22px; font-size:1.5em; border-radius:16px;
+  border:3px solid transparent; cursor:pointer; transition:all .18s;
+  background:var(--lt-yellow); min-width:80px; font-family:inherit;
+}
+.opt-btn:hover { transform:scale(1.08); box-shadow:0 4px 12px rgba(0,0,0,.15); }
+.opt-btn.correct { background:#C8E6C9!important; border-color:#388E3C!important; transform:scale(1.1); }
+.opt-btn.wrong   { background:#FFCDD2!important; border-color:#C62828!important; }
+.opt-btn:disabled { cursor:default; }
+
+/* TRUE/FALSE */
+.tf-btn {
+  padding:20px 36px; font-size:1.5em; font-weight:bold; border-radius:20px;
+  border:3px solid transparent; cursor:pointer; transition:all .18s; font-family:inherit; min-width:148px;
+}
+.tf-btn:hover { transform:scale(1.07); }
+.tf-btn.true-btn  { background:var(--lt-green);  color:var(--green); border-color:var(--green); }
+.tf-btn.false-btn { background:var(--lt-red);    color:var(--red);   border-color:var(--red); }
+.tf-btn.correct   { background:#C8E6C9!important; border-color:#388E3C!important; }
+.tf-btn.wrong     { background:#FFCDD2!important; border-color:#C62828!important; }
+
+/* HOW MANY MORE */
+.howmany-groups { display:flex; gap:16px; justify-content:center; align-items:center; margin:10px 0; flex-wrap:wrap; }
+.group-box {
+  padding:14px 16px; background:var(--lt-blue); border:3px solid #90CAF9;
+  border-radius:18px; font-size:2.2em; line-height:1.4; min-width:130px;
+}
+.group-label { font-size:.38em; color:#555; margin-bottom:4px; display:block; font-weight:bold; }
+.group-count { font-size:.38em; color:var(--blue); margin-top:4px; display:block; font-weight:bold; }
+
+/* SPACE VISUAL */
+.space-scene {
+  position:relative; width:260px; height:180px; margin:10px auto;
+  background:var(--lt-blue); border:3px solid #90CAF9; border-radius:20px;
+  overflow:visible;
+}
+.space-obj { position:absolute; font-size:2.8em; line-height:1; }
+
+/* SEQUENCE */
+.seq-items { display:flex; gap:14px; justify-content:center; flex-wrap:wrap; margin:14px 0; }
+.seq-item {
+  width:100px; background:var(--lt-purple); border:3px solid #CE93D8;
+  border-radius:18px; padding:12px 6px; cursor:pointer; font-size:2.4em;
+  text-align:center; transition:all .18s; position:relative;
+}
+.seq-item:hover { transform:scale(1.07); border-color:var(--purple); }
+.seq-num {
+  position:absolute; top:-10px; right:-10px;
+  background:var(--purple); color:white; width:28px; height:28px;
+  border-radius:50%; font-size:14px; display:none;
+  align-items:center; justify-content:center; font-weight:bold;
+}
+.seq-item.selected .seq-num { display:flex; }
+.seq-item.correct { background:#C8E6C9; border-color:var(--green); }
+.seq-item.wrong   { background:#FFCDD2; border-color:var(--red); }
+.seq-label { font-size:.26em; color:#555; margin-top:6px; display:block; line-height:1.3; }
+
+/* LOOPS */
+.loop-box {
+  display:inline-block; background:var(--lt-teal); border:3px solid var(--teal);
+  border-radius:16px; padding:12px 20px; margin:6px; font-size:1.3em;
+}
+.loop-times { font-size:2em; color:var(--teal); font-weight:bold; margin:8px 0; }
+
+/* PARENT GUIDE */
+.parent-guide-toggle {
+  display:inline-flex; align-items:center; gap:6px;
+  background:#FFF8E1; border:2px solid #FFD54F; border-radius:12px;
+  padding:7px 16px; font-size:.88em; color:#5D4037;
+  cursor:pointer; margin-bottom:10px; font-family:inherit;
+  transition:all .18s;
+}
+.parent-guide-toggle:hover { background:#FFE082; }
+.parent-guide-box {
+  background:#FFFDE7; border:2px solid #FFD54F; border-radius:16px;
+  padding:14px 16px; margin-bottom:14px; text-align:left;
+  font-size:.88em; line-height:1.55; color:#4E342E;
+  display:none;
+}
+.parent-guide-box.open { display:block; }
+.parent-guide-box strong { color:#E65100; }
+.parent-guide-box .tip {
+  margin-top:8px; padding:8px 12px;
+  background:#E8F5E9; border-left:4px solid #388E3C;
+  border-radius:0 10px 10px 0; color:#1B5E20; font-style:italic;
+}
+
+/* DEBUG */
+.debug-steps { display:flex; flex-direction:column; gap:10px; margin:14px 0; text-align:left; }
+.debug-step {
+  display:flex; align-items:center; gap:12px;
+  padding:12px 16px; background:var(--lt-orange);
+  border:3px solid #FFCC80; border-radius:14px;
+  cursor:pointer; transition:all .18s; font-size:1.0em;
+}
+.debug-step:hover { border-color:var(--orange); transform:translateX(4px); }
+.debug-step .step-num  { font-size:1.3em; font-weight:bold; color:var(--orange); min-width:28px; }
+.debug-step .step-emoji { font-size:1.8em; }
+.debug-step .step-text  { flex:1; color:#333; }
+.debug-step.correct { background:#C8E6C9; border-color:var(--green); }
+.debug-step.wrong   { background:#FFCDD2; border-color:var(--red); }
+
+/* FEEDBACK */
+#feedback {
+  font-size:1.3em; font-weight:bold; padding:12px 20px;
+  border-radius:14px; margin:14px 0; display:none;
+  animation:popIn .3s ease;
+}
+#feedback.correct { background:#C8E6C9; color:var(--green); }
+#feedback.wrong   { background:#FFCDD2; color:var(--red); }
+@keyframes popIn { 0%{transform:scale(.7);opacity:0} 80%{transform:scale(1.06)} 100%{transform:scale(1);opacity:1} }
+
+/* NAV */
+.nav-row { display:flex; gap:12px; justify-content:center; margin-top:18px; }
+.nav-btn {
+  padding:12px 28px; font-size:1.0em; font-weight:bold;
+  border-radius:14px; border:none; cursor:pointer; font-family:inherit; transition:all .18s;
+}
+.nav-btn:hover { transform:translateY(-2px); box-shadow:0 4px 10px rgba(0,0,0,.15); }
+.btn-next    { background:var(--purple); color:white; }
+.btn-prev    { background:#EEE; color:#555; }
+.btn-restart { background:var(--yellow); color:var(--brown); }
+.btn-next:disabled { background:#CCC; cursor:default; transform:none; box-shadow:none; }
+
+/* WELCOME */
+#welcome-screen .card { background:linear-gradient(135deg,#F3E5F5,#FFFDE7); }
+.welcome-title { font-size:2.4em; color:var(--purple); margin-bottom:6px; }
+.welcome-sub   { font-size:1.05em; color:var(--brown); margin-bottom:6px; }
+.level-pill {
+  display:inline-block; background:linear-gradient(135deg,var(--purple),#AB47BC);
+  color:white; border-radius:20px; padding:6px 20px; font-size:1em; margin:8px 0 14px;
+}
+.activity-list { display:grid; grid-template-columns:1fr 1fr; gap:10px; margin:16px 0; text-align:left; }
+.act-item { padding:10px 14px; border-radius:14px; font-size:.93em; color:#333; }
+.start-btn {
+  background:linear-gradient(135deg,var(--purple),#AB47BC);
+  color:white; border:none; padding:18px 50px; font-size:1.35em; font-weight:bold;
+  border-radius:20px; cursor:pointer; margin-top:10px; font-family:inherit;
+  transition:all .2s; box-shadow:0 4px 14px rgba(106,27,154,.4);
+}
+.start-btn:hover { transform:scale(1.05); box-shadow:0 6px 18px rgba(106,27,154,.5); }
+
+/* FINAL */
+#final-screen .card { background:linear-gradient(135deg,#F3E5F5,#C8E6C9,#E1F5FE); }
+.final-big   { font-size:4em; margin:10px 0; }
+.final-title { font-size:2em; font-weight:bold; color:var(--purple); }
+.final-sub   { font-size:1.1em; color:var(--brown); margin:10px 0; }
+.medals      { font-size:2.4em; letter-spacing:8px; margin:14px 0; }
+#confetti-canvas { position:fixed; top:0; left:0; width:100%; height:100%; pointer-events:none; z-index:9999; }
+</style>
+</head>
+<body>
+<canvas id="confetti-canvas"></canvas>
+
+<div id="header">
+  <h1>🐄 Molly's Math &amp; Code Farm — ⭐ Nivel 2</h1>
+  <div id="stars-bar">
+    <span class="star" id="s1">⭐</span><span class="star" id="s2">⭐</span>
+    <span class="star" id="s3">⭐</span><span class="star" id="s4">⭐</span>
+    <span class="star" id="s5">⭐</span><span class="star" id="s6">⭐</span>
+    <span class="star" id="s7">⭐</span><span class="star" id="s8">⭐</span>
+    <span id="score-text">0 / 0</span>
+  </div>
+</div>
+
+<!-- WELCOME -->
+<div id="welcome-screen" class="screen active">
+  <div class="card">
+    <div class="welcome-title">🐄 ¡Bienvenida de nuevo! / Welcome back!</div>
+    <div class="level-pill">⭐ NIVEL 2 / LEVEL 2 ⭐</div>
+    <div class="welcome-sub">¡Seguimos aprendiendo con Molly! / Let's keep learning with Molly! 🌟</div>
+    <span style="font-size:3.5em; display:block; margin:8px 0">🐄🌾🐷🌟🐑</span>
+    <div class="activity-list">
+      <div class="act-item" style="background:#FCE4EC">🔴 Patrones ABC <span style="font-size:.8em;color:#888">+difícil</span></div>
+      <div class="act-item" style="background:#E3F2FD">➖ ¿Cuántas MÁS? <span style="font-size:.8em;color:#888">nuevo</span></div>
+      <div class="act-item" style="background:#E8F5E9">↕️ Arriba / Abajo <span style="font-size:.8em;color:#888">nuevo</span></div>
+      <div class="act-item" style="background:#FFF3E0">➕ Sumas hasta 10 <span style="font-size:.8em;color:#888">+difícil</span></div>
+      <div class="act-item" style="background:#F3E5F5">🔢 4 pasos <span style="font-size:.8em;color:#888">+difícil</span></div>
+      <div class="act-item" style="background:#E0F2F1">🔁 Loops ×3 ×4 <span style="font-size:.8em;color:#888">+difícil</span></div>
+      <div class="act-item" style="background:#FCE4EC">🔢 ¿3&gt;2? ¿2+2=5? <span style="font-size:.8em;color:#888">nuevo</span></div>
+      <div class="act-item" style="background:#FFEBEE">🐛 Errores de orden <span style="font-size:.8em;color:#888">+difícil</span></div>
+    </div>
+    <button class="start-btn" onclick="startGame()">¡Empezar Nivel 2! 🚀</button>
+  </div>
+</div>
+
+<!-- GAME -->
+<div id="game-screen" class="screen">
+  <div id="activity-container"></div>
+  <div id="feedback"></div>
+  <div class="nav-row">
+    <button class="nav-btn btn-prev" onclick="prevActivity()">◀ Atrás</button>
+    <button class="nav-btn btn-next" id="next-btn" onclick="nextQuestion()" disabled>Siguiente ▶</button>
+  </div>
+</div>
+
+<!-- FINAL -->
+<div id="final-screen" class="screen">
+  <div class="card">
+    <div class="final-big">🏆🌟🏆</div>
+    <div class="final-title">¡INCREÍBLE! / AMAZING!</div>
+    <div class="level-pill">⭐ NIVEL 2 COMPLETADO / LEVEL 2 COMPLETE ⭐</div>
+    <div class="medals" id="final-medals">⭐⭐⭐⭐⭐⭐⭐⭐</div>
+    <div class="final-sub" id="final-msg"></div>
+    <span style="font-size:3em; display:block; margin:14px 0">🐄🌟🐷🌟🐑🌟🐔🌟🐴</span>
+    <div class="final-sub">¡Molly está súper orgullosa de vos! 🐄❤️<br>Molly is super proud of you!</div>
+    <div class="nav-row">
+      <button class="nav-btn btn-restart" onclick="restartGame()">🔄 Jugar de nuevo / Play again</button>
+    </div>
+  </div>
+</div>
+
+<script>
+// ===================================================================
+// DATA — NIVEL 2
+// ===================================================================
+const ACTIVITIES = [
+
+  // ─── 1. PATRONES ABC (3 elementos) ────────────────────────────
+  {
+    id:'patterns', type:'patterns',
+    badge:'🔴 Matemáticas · Patrones ABC',
+    title:'¿Qué sigue? / What comes next?',
+    sub:'¡Ahora el patrón tiene 3 partes! / Now the pattern has 3 parts!',
+    guide:{
+      concept:'<strong>¿Qué es un patrón?</strong> Es una secuencia que se repite siempre de la misma manera. Reconocer patrones es una de las habilidades más importantes en matemática y en programación: las computadoras hacen exactamente eso, detectar y repetir patrones.',
+      tip:'Antes de que Elena haga clic, leé el patrón en voz alta juntos: "rojo, azul, amarillo... rojo, azul... ¿qué sigue?". Esta vez hay 3 elementos diferentes (A-B-C), un escalón más que la versión anterior (A-B).'
+    },
+    questions:[
+      { seq:['🔴','🔵','🟡','🔴','🔵'], opts:['🟡','🔴','🔵'], ans:0 },
+      { seq:['🐄','🐷','🐑','🐄','🐷'], opts:['🐑','🐄','🐷'], ans:0 },
+      { seq:['⭐','🌙','☀️','⭐','🌙'], opts:['☀️','⭐','🌙'],  ans:0 },
+      { seq:['🍎','🍌','🍊','🍎','🍌'], opts:['🍊','🍎','🍌'], ans:0 },
+    ]
+  },
+
+  // ─── 2. ¿CUÁNTAS MÁS? (diferencia) ───────────────────────────
+  {
+    id:'howmany', type:'howmany',
+    badge:'➖ Matemáticas · ¿Cuántas MÁS?',
+    title:'¿Cuántas MÁS tiene el Grupo A? / How many MORE does Group A have?',
+    sub:'Contá la diferencia entre los dos grupos / Count the difference between the two groups',
+    guide:{
+      concept:'<strong>¿Qué es la diferencia?</strong> Es cuánto le "sobra" a un grupo respecto al otro. Este ejercicio introduce de forma visual el concepto de sustracción (resta) sin usar aún el símbolo "−". Elena va a comparar cantidades concretas antes de operar con números abstractos.',
+      tip:'Pedile que cuente los animales de cada grupo con el dedo. Luego preguntale: "¿Cuántas vacas tiene el Grupo A que el Grupo B no tiene?" Es más intuitivo que preguntar cuánto es 4 menos 2.'
+    },
+    questions:[
+      { a:['🐄','🐄','🐄','🐄'], b:['🐄','🐄'],      opts:[1,2,3], ans:2 },
+      { a:['🐷','🐷','🐷','🐷','🐷'], b:['🐷','🐷'],   opts:[2,3,4], ans:3 },
+      { a:['🐑','🐑','🐑'],      b:['🐑'],            opts:[1,2,3], ans:2 },
+      { a:['🐔','🐔','🐔','🐔'], b:['🐔','🐔','🐔'],  opts:[1,2,3], ans:1 },
+    ]
+  },
+
+  // ─── 3. ESPACIOS — Arriba / Abajo / Izquierda / Derecha ───────
+  {
+    id:'space', type:'truefalse',
+    badge:'↕️ Matemáticas · Posiciones',
+    title:'¿Verdadero o Falso? / True or False?',
+    sub:'¿Dónde está el objeto? / Where is the object?',
+    guide:{
+      concept:'<strong>¿Por qué es importante la noción espacial?</strong> El razonamiento espacial es la base de la geometría, los mapas y también de la programación (coordenadas, interfaces, gráficos). En esta versión avanzamos de adentro/afuera hacia las cuatro direcciones: arriba, abajo, izquierda y derecha.',
+      tip:'"Izquierda y derecha" suelen ser las más difíciles para los 4 años. Un truco: recordale que la mano con la que escribe es la derecha. También podés practicar esto en casa señalando objetos cotidianos antes de la actividad.'
+    },
+    questions:[
+      {
+        visual:'above', obj:'🍎', ref:'📦',
+        stmt:'La manzana está ARRIBA de la caja', en:'The apple is ABOVE the box', ans:true
+      },
+      {
+        visual:'below', obj:'🦆', ref:'☁️',
+        stmt:'El pato está ARRIBA de la nube',    en:'The duck is ABOVE the cloud', ans:false
+      },
+      {
+        visual:'left',  obj:'🐄', ref:'🏠',
+        stmt:'La vaca está a la IZQUIERDA',       en:'The cow is on the LEFT',     ans:true
+      },
+      {
+        visual:'right', obj:'🌸', ref:'🌳',
+        stmt:'La flor está a la IZQUIERDA del árbol', en:'The flower is to the LEFT of the tree', ans:false
+      },
+    ]
+  },
+
+  // ─── 4. SUMAS hasta 10 ────────────────────────────────────────
+  {
+    id:'sums', type:'sums',
+    badge:'➕ Matemáticas · Sumas hasta 10',
+    title:'¿Cuántos hay en total? / How many in total?',
+    sub:'Contá los dos grupos y sumalos / Count both groups and add them',
+    guide:{
+      concept:'<strong>Sumas hasta 10.</strong> Consolidamos la adición con números un poco más grandes que en la versión anterior (hasta 5). A esta edad el objetivo no es memorizar resultados sino internalizar la operación: juntar dos grupos y contar el total.',
+      tip:'Si Elena duda, animala a contar con los dedos o señalar cada emoji en pantalla. No hay apuro en llegar a la respuesta de memoria. Lo importante es que el proceso de "juntar y contar" quede claro antes de avanzar a números más grandes.'
+    },
+    questions:[
+      { a:['🐄','🐄','🐄'],      b:['🐄','🐄'],           opts:[4,5,6],  ans:5 },
+      { a:['🐷','🐷','🐷'],      b:['🐷','🐷','🐷'],      opts:[5,6,7],  ans:6 },
+      { a:['🐑','🐑','🐑','🐑'], b:['🐑','🐑','🐑'],      opts:[6,7,8],  ans:7 },
+      { a:['🐔','🐔','🐔','🐔'], b:['🐔','🐔','🐔','🐔'], opts:[7,8,9],  ans:8 },
+    ]
+  },
+
+  // ─── 5. SECUENCIAS de 4 pasos ─────────────────────────────────
+  {
+    id:'sequence', type:'sequence',
+    badge:'🔢 Programación · Secuencias de 4 pasos',
+    title:'Poné los 4 pasos en orden / Put the 4 steps in order',
+    sub:'Hacé clic de PRIMERO a CUARTO / Click from FIRST to FOURTH',
+    guide:{
+      concept:'<strong>¿Qué es una secuencia?</strong> En programación, una secuencia es una lista ordenada de instrucciones que la computadora sigue una por una. Si el orden está mal, el programa no funciona. Este es el concepto de <em>algoritmo</em> en su forma más simple. Pasar de 3 a 4 pasos multiplica las combinaciones posibles, lo que exige más razonamiento lógico.',
+      tip:'Antes de hacer clic, hablá de los pasos en voz alta: "¿Qué hacemos primero para hacer jugo? ¿Y después?" Que Elena cuente la historia con sus palabras antes de ordenarla en pantalla. Esto refuerza la comprensión del orden causal.'
+    },
+    questions:[
+      {
+        prompt:'🌱 ¿Cómo crece y se come una fruta? / How does fruit grow and get eaten?',
+        items:[
+          { emoji:'🌰', label:'1. Semilla/Seed' },
+          { emoji:'😋', label:'4. Comer/Eat' },
+          { emoji:'🌱', label:'2. Brote/Sprout' },
+          { emoji:'🍎', label:'3. Fruta/Fruit' },
+        ],
+        correct:[0,2,3,1]
+      },
+      {
+        prompt:'🥤 ¿Cómo hacer jugo de naranja? / How to make orange juice?',
+        items:[
+          { emoji:'🥤', label:'4. Tomar/Drink' },
+          { emoji:'🍊', label:'1. Agarrar/Pick' },
+          { emoji:'🍹', label:'3. Exprimir/Squeeze' },
+          { emoji:'🧼', label:'2. Lavar/Wash' },
+        ],
+        correct:[1,3,2,0]
+      },
+      {
+        prompt:'🐔 ¿Cómo crece un pollito? / How does a chick grow?',
+        items:[
+          { emoji:'🐣', label:'2. Nace/Hatches' },
+          { emoji:'🥚', label:'1. Huevo/Egg' },
+          { emoji:'🐔', label:'4. Gallina/Hen' },
+          { emoji:'🐥', label:'3. Pollito/Chick' },
+        ],
+        correct:[1,0,3,2]
+      },
+    ]
+  },
+
+  // ─── 6. LOOPS ×3 ×4 ───────────────────────────────────────────
+  {
+    id:'loops', type:'loops',
+    badge:'🔁 Programación · Loops',
+    title:'¿Cuántas veces en total? / How many times in total?',
+    sub:'¡Ahora con más repeticiones! / Now with more repetitions!',
+    guide:{
+      concept:'<strong>¿Qué es un loop?</strong> Un loop (bucle) es una instrucción que le dice a la computadora "repetí esto N veces". Es uno de los conceptos más usados en programación. Calcular cuántas veces ocurre algo en total es la base de la multiplicación: 3 MOOs × 3 veces = 9 MOOs en total.',
+      tip:'Para ayudar a Elena, podés hacerlo físico: decí "MOO MOO MOO" juntos, aplaudí una vez, y repetí. Después contá todos los MOOs. La representación corporal ayuda mucho a esta edad a entender la repetición antes de calcularlo mentalmente.'
+    },
+    questions:[
+      {
+        animal:'🐄', sound:'MOO!', soundCount:3, times:3,
+        prompt:'Molly dice 🐄 MOO! MOO! MOO! — Lo hace 3 veces. / She does it 3 times.',
+        opts:[6,7,8,9], ans:9
+      },
+      {
+        animal:'🐕', sound:'WOOF!', soundCount:2, times:4,
+        prompt:'🐕 dice WOOF! WOOF! — Lo hace 4 veces. / He does it 4 times.',
+        opts:[6,7,8,9], ans:8
+      },
+      {
+        animal:'🐈', sound:'MEOW!', soundCount:3, times:3,
+        prompt:'🐈 dice MEOW! MEOW! MEOW! — Lo hace 3 veces. / She does it 3 times.',
+        opts:[7,8,9,10], ans:9
+      },
+    ]
+  },
+
+  // ─── 7. VERDADERO / FALSO — comparaciones y sumas ─────────────
+  {
+    id:'truefalse', type:'truefalse',
+    badge:'✅ Programación · Comparaciones',
+    title:'¿Verdadero o Falso? / True or False?',
+    sub:'Matemáticas y comparaciones / Math and comparisons',
+    guide:{
+      concept:'<strong>Verdadero y Falso en programación.</strong> En código, casi toda decisión se basa en una condición que es verdadera o falsa (booleanos). En esta versión introducimos comparaciones numéricas (3 > 2, 5 < 4) y sumas como afirmaciones (2+2=5). Esto es exactamente lo que hace una computadora cuando evalúa una condición.',
+      tip:'"Mayor que" y "menor que" pueden resultar abstractos. Un truco visual: el símbolo > es como una boca abierta que siempre se come al número más grande. Podés dibujarlo en un papel antes de la actividad. Para las sumas (¿2+2=5?) animá a Elena a contarlo con los dedos y decidir sola.'
+    },
+    questions:[
+      { visual:'math', inner:'3 > 2', ref:'',
+        stmt:'3 es MAYOR que 2',    en:'3 is GREATER THAN 2',  ans:true  },
+      { visual:'math', inner:'5 < 4', ref:'',
+        stmt:'5 es MENOR que 4',    en:'5 is LESS THAN 4',     ans:false },
+      { visual:'math', inner:'2+2=5', ref:'',
+        stmt:'2 + 2 = 5',           en:'2 + 2 = 5',            ans:false },
+      { visual:'math', inner:'4+1=5', ref:'',
+        stmt:'4 + 1 = 5',           en:'4 + 1 = 5',            ans:true  },
+    ]
+  },
+
+  // ─── 8. DEBUG — errores de orden / lógica ─────────────────────
+  {
+    id:'debug', type:'debug',
+    badge:'🐛 Programación · Debug',
+    title:'¡Encontrá el paso equivocado! / Find the wrong step!',
+    sub:'Un paso está en el lugar incorrecto o es incorrecto / One step is wrong or in the wrong place',
+    guide:{
+      concept:'<strong>¿Qué es el debugging?</strong> Depurar (debug) es encontrar y corregir errores en un programa. Es una habilidad central en programación y también en el pensamiento crítico general. En esta versión los errores son más sutiles que antes: ya no son pasos absurdos (volar a la luna) sino pasos lógicamente incorrectos o fuera de orden.',
+      tip:'Leé los pasos en voz alta con Elena y preguntale después de cada uno: "¿Tiene sentido hacer esto acá?" Si dice que todos están bien, volvé a leerlos más despacio y señalá el conflicto: "¿Podés tomar el jugo antes de exprimirlo?" Que ella razone la inconsistencia.'
+    },
+    questions:[
+      {
+        prompt:'🍊 Pasos para hacer jugo / Steps to make juice:',
+        steps:[
+          { emoji:'🍊', text:'Agarrar la naranja / Pick the orange',  wrong:false },
+          { emoji:'🥤', text:'¡Tomar el jugo! / Drink the juice!',    wrong:true  },
+          { emoji:'🍹', text:'Exprimir la naranja / Squeeze orange',  wrong:false },
+          { emoji:'🫙', text:'Verter en vaso / Pour into glass',      wrong:false },
+        ]
+      },
+      {
+        prompt:'👕 Pasos para vestirse / Steps to get dressed:',
+        steps:[
+          { emoji:'🚿', text:'Bañarse / Take a shower',              wrong:false },
+          { emoji:'👕', text:'Ponerse la remera / Put on shirt',      wrong:false },
+          { emoji:'👟', text:'Ponerse los zapatos / Put on shoes',    wrong:false },
+          { emoji:'🛁', text:'Llenar la bañera / Fill the bathtub',   wrong:true  },
+        ]
+      },
+      {
+        prompt:'🌱 Pasos para plantar / Steps to plant:',
+        steps:[
+          { emoji:'🌰', text:'Poner la semilla / Place the seed',     wrong:false },
+          { emoji:'💧', text:'Regar / Water it',                      wrong:false },
+          { emoji:'🌷', text:'¡Ya tiene flor! / It has a flower!',    wrong:true  },
+          { emoji:'⏳', text:'Esperar que crezca / Wait for it to grow', wrong:false },
+        ]
+      },
+    ]
+  }
+];
+
+// ===================================================================
+// STATE
+// ===================================================================
+let curAct=0, curQ=0, score=0, total=0, answered=false;
+let seqSelected=[], seqCorrectOrder=[];
+
+// ===================================================================
+// STARS
+// ===================================================================
+function updateStars(){
+  for(let i=1;i<=8;i++){
+    document.getElementById('s'+i).classList.toggle('lit', i<=score);
+  }
+  document.getElementById('score-text').textContent = score+' / '+total;
+}
+
+// ===================================================================
+// NAVIGATION
+// ===================================================================
+function showScreen(id){
+  document.querySelectorAll('.screen').forEach(s=>s.classList.remove('active'));
+  document.getElementById(id).classList.add('active');
+}
+function startGame(){ curAct=0;curQ=0;score=0;total=0;answered=false; updateStars(); showScreen('game-screen'); renderActivity(); }
+function restartGame(){ showScreen('welcome-screen'); }
+function prevActivity(){
+  if(curAct>0){ curAct--;curQ=0;answered=false;clearFeedback();renderActivity(); }
+  else showScreen('welcome-screen');
+}
+function nextQuestion(){
+  if(!answered) return;
+  curQ++; answered=false; clearFeedback();
+  document.getElementById('next-btn').disabled=true;
+  const act=ACTIVITIES[curAct];
+  if(curQ>=act.questions.length){ curAct++;curQ=0; if(curAct>=ACTIVITIES.length){ showFinal();return; } }
+  renderActivity();
+}
+function showFinal(){
+  showScreen('final-screen');
+  document.getElementById('final-medals').textContent='⭐'.repeat(Math.min(score,8));
+  const pct=total>0?Math.round(score/total*100):0;
+  document.getElementById('final-msg').textContent =
+    score>=total*.8 ? `¡Excelente! / Excellent! 🌟 ${score}/${total} correctas`
+                    : `¡Muy bien! / Great job! 🌈 ${score}/${total} correctas`;
+  launchConfetti();
+}
+function clearFeedback(){ const f=document.getElementById('feedback'); f.style.display='none'; f.className=''; }
+function showFeedback(ok,msg){
+  const f=document.getElementById('feedback');
+  f.textContent=(ok?'✅ ':'❌ ')+msg;
+  f.className=ok?'correct':'wrong'; f.style.display='block';
+  if(ok){score++;updateStars();} total++; answered=true;
+  document.getElementById('next-btn').disabled=false;
+}
+
+// ===================================================================
+// RENDER
+// ===================================================================
+function toggleGuide(){
+  const box=document.getElementById('guide-box');
+  const btn=document.getElementById('guide-btn');
+  const open=box.classList.toggle('open');
+  btn.textContent = open ? '👨‍👩‍👧 Para papá y mamá  ▲' : '👨‍👩‍👧 Para papá y mamá  ▼';
+}
+
+function renderGuide(guide){
+  if(!guide) return '';
+  return `<button class="parent-guide-toggle" id="guide-btn" onclick="toggleGuide()">
+    👨‍👩‍👧 Para papá y mamá  ▼
+  </button>
+  <div class="parent-guide-box" id="guide-box">
+    <div>${guide.concept}</div>
+    <div class="tip">💡 ${guide.tip}</div>
+  </div>`;
+}
+
+function renderActivity(){
+  const act=ACTIVITIES[curAct], q=act.questions[curQ];
+  const pct=((curQ/act.questions.length)*100).toFixed(0);
+  let html=`<div class="card act-${act.id}">
+    <span class="level-badge">⭐ Nivel 2</span>
+    <span class="act-badge">${act.badge}</span>
+    <div class="progress-bar"><div class="progress-fill" style="width:${pct}%"></div></div>
+    ${renderGuide(act.guide)}
+    <div class="question-text">
+      <div class="es">${act.title}</div>
+      <div class="en" style="margin-top:4px">${act.sub}</div>
+    </div>`;
+  switch(act.type){
+    case 'patterns':  html+=renderPatterns(q);  break;
+    case 'howmany':   html+=renderHowMany(q);   break;
+    case 'truefalse': html+=renderTrueFalse(q,act.id); break;
+    case 'sums':      html+=renderSums(q);      break;
+    case 'sequence':  html+=renderSequence(q);  break;
+    case 'loops':     html+=renderLoops(q);     break;
+    case 'debug':     html+=renderDebug(q);     break;
+  }
+  html+='</div>';
+  document.getElementById('activity-container').innerHTML=html;
+}
+
+// ─── PATTERNS ─────────────────────────────────────────────────────
+function renderPatterns(q){
+  const seq=q.seq.join(' ')+' <span class="blank-slot">?</span>';
+  const opts=q.opts.map((o,i)=>`<button class="opt-btn" onclick="answerPattern(${i})">${o}</button>`).join('');
+  return `<div class="emoji-row">${seq}</div><div class="options">${opts}</div>`;
+}
+function answerPattern(idx){
+  if(answered)return;
+  const q=ACTIVITIES[curAct].questions[curQ];
+  document.querySelectorAll('.opt-btn').forEach((b,i)=>{
+    b.disabled=true;
+    if(i===q.ans) b.classList.add('correct');
+    else if(i===idx) b.classList.add('wrong');
+  });
+  showFeedback(idx===q.ans, idx===q.ans?'¡Correcto! / Correct! 🌟':`La respuesta era ${q.opts[q.ans]}`);
+}
+
+// ─── HOW MANY MORE ────────────────────────────────────────────────
+function renderHowMany(q){
+  const aStr=q.a.join(' '), bStr=q.b.join(' ');
+  const opts=q.opts.map(o=>
+    `<button class="opt-btn" style="font-size:2em;font-weight:bold" onclick="answerHowMany(${o})">${o}</button>`
+  ).join('');
+  return `<div class="howmany-groups">
+    <div class="group-box">
+      <span class="group-label">Grupo A / Group A</span>
+      ${aStr}
+      <span class="group-count">${q.a.length} animales</span>
+    </div>
+    <div style="font-size:2.5em;color:#888">vs</div>
+    <div class="group-box">
+      <span class="group-label">Grupo B / Group B</span>
+      ${bStr}
+      <span class="group-count">${q.b.length} animales</span>
+    </div>
+  </div>
+  <div class="question-text es" style="margin:10px 0">
+    A tiene __ MÁS que B / A has __ MORE than B
+  </div>
+  <div class="options">${opts}</div>`;
+}
+function answerHowMany(val){
+  if(answered)return;
+  const q=ACTIVITIES[curAct].questions[curQ];
+  document.querySelectorAll('.opt-btn').forEach(b=>{
+    b.disabled=true;
+    if(parseInt(b.textContent)===q.ans) b.classList.add('correct');
+    else if(parseInt(b.textContent)===val) b.classList.add('wrong');
+  });
+  showFeedback(val===q.ans, val===q.ans?`¡Correcto! ${q.a.length} - ${q.b.length} = ${q.ans} 🌟`:`La diferencia era ${q.ans}`);
+}
+
+// ─── TRUE / FALSE + SPACE ─────────────────────────────────────────
+function renderTrueFalse(q, actId){
+  let visual='';
+  if(q.visual==='above'){
+    visual=`<div class="space-scene">
+      <span class="space-obj" style="top:20px;left:50%;transform:translateX(-50%)">${q.obj}</span>
+      <span class="space-obj" style="bottom:20px;left:50%;transform:translateX(-50%)">${q.ref}</span>
+    </div>`;
+  } else if(q.visual==='below'){
+    visual=`<div class="space-scene">
+      <span class="space-obj" style="top:20px;left:50%;transform:translateX(-50%)">${q.ref}</span>
+      <span class="space-obj" style="bottom:20px;left:50%;transform:translateX(-50%)">${q.obj}</span>
+    </div>`;
+  } else if(q.visual==='left'){
+    visual=`<div class="space-scene">
+      <span class="space-obj" style="left:20px;top:50%;transform:translateY(-50%)">${q.obj}</span>
+      <span class="space-obj" style="right:20px;top:50%;transform:translateY(-50%)">${q.ref}</span>
+    </div>`;
+  } else if(q.visual==='right'){
+    visual=`<div class="space-scene">
+      <span class="space-obj" style="left:20px;top:50%;transform:translateY(-50%)">${q.ref}</span>
+      <span class="space-obj" style="right:20px;top:50%;transform:translateY(-50%)">${q.obj}</span>
+    </div>`;
+  } else if(q.visual==='math'){
+    visual=`<div style="font-size:3.5em;font-weight:bold;color:var(--purple);margin:14px 0;
+                        background:var(--lt-purple);border-radius:20px;padding:16px 30px;
+                        display:inline-block">${q.inner}</div>`;
+  } else {
+    visual=`<span class="emoji-big">${q.inner}</span>`;
+  }
+  return `${visual}
+    <div class="question-text" style="margin:10px 0">
+      <div class="es">"${q.stmt}"</div>
+      <div class="en">"${q.en}"</div>
+    </div>
+    <div class="options">
+      <button class="tf-btn true-btn"  onclick="answerTF(true)">✅ VERDADERO<br><span style="font-size:.6em">TRUE</span></button>
+      <button class="tf-btn false-btn" onclick="answerTF(false)">❌ FALSO<br><span style="font-size:.6em">FALSE</span></button>
+    </div>`;
+}
+function answerTF(choice){
+  if(answered)return;
+  const q=ACTIVITIES[curAct].questions[curQ];
+  const ok=choice===q.ans;
+  document.querySelectorAll('.tf-btn,.opt-btn').forEach(b=>b.disabled=true);
+  document.querySelectorAll('.tf-btn').forEach(b=>{
+    if(b.classList.contains('true-btn')  && q.ans===true)  b.classList.add('correct');
+    if(b.classList.contains('false-btn') && q.ans===false) b.classList.add('correct');
+    if(b.classList.contains('true-btn')  && choice===true  && !ok) b.classList.add('wrong');
+    if(b.classList.contains('false-btn') && choice===false && !ok) b.classList.add('wrong');
+  });
+  showFeedback(ok, ok?'¡Correcto! / Correct! 🌟':`Era ${q.ans?'VERDADERO ✅':'FALSO ❌'}`);
+}
+
+// ─── SUMS ─────────────────────────────────────────────────────────
+function renderSums(q){
+  const opts=q.opts.map(o=>
+    `<button class="opt-btn" style="font-size:2em;font-weight:bold" onclick="answerSum(${o})">${o}</button>`
+  ).join('');
+  return `<div class="emoji-row">${q.a.join('')} <span style="font-size:.7em;color:#888">+</span> ${q.b.join('')} <span style="font-size:.7em;color:#888">=</span> <span class="blank-slot">?</span></div>
+          <div class="options">${opts}</div>`;
+}
+function answerSum(val){
+  if(answered)return;
+  const q=ACTIVITIES[curAct].questions[curQ];
+  document.querySelectorAll('.opt-btn').forEach(b=>{
+    b.disabled=true;
+    if(parseInt(b.textContent)===q.ans) b.classList.add('correct');
+    else if(parseInt(b.textContent)===val) b.classList.add('wrong');
+  });
+  showFeedback(val===q.ans, val===q.ans?'¡Correcto! / Correct! 🌟':`La respuesta era ${q.ans}`);
+}
+
+// ─── SEQUENCE (4 pasos) ───────────────────────────────────────────
+function renderSequence(q){
+  seqSelected=[]; seqCorrectOrder=q.correct;
+  const items=q.items.map((it,i)=>
+    `<div class="seq-item" id="seq-${i}" onclick="clickSeq(${i})">
+      ${it.emoji}
+      <span class="seq-num" id="seqnum-${i}"></span>
+      <span class="seq-label">${it.label}</span>
+    </div>`
+  ).join('');
+  return `<div class="question-text es" style="margin:8px 0">${q.prompt}</div>
+    <div class="seq-items">${items}</div>
+    <div style="font-size:.88em;color:#888;margin-top:8px">
+      Clic en orden: 1°, 2°, 3°, 4° / Click in order: 1st, 2nd, 3rd, 4th
+    </div>`;
+}
+function clickSeq(idx){
+  if(answered)return;
+  if(seqSelected.includes(idx))return;
+  seqSelected.push(idx);
+  const numEl=document.getElementById('seqnum-'+idx);
+  numEl.textContent=seqSelected.length;
+  document.getElementById('seq-'+idx).classList.add('selected');
+  if(seqSelected.length===seqCorrectOrder.length){
+    const ok=seqSelected.every((v,i)=>v===seqCorrectOrder[i]);
+    seqSelected.forEach((v,i)=>{
+      document.getElementById('seq-'+v).classList.add(v===seqCorrectOrder[i]?'correct':'wrong');
+    });
+    showFeedback(ok, ok?'¡Orden perfecto! / Perfect order! 🌟':'¡Casi! El orden correcto está marcado.');
+  }
+}
+
+// ─── LOOPS ────────────────────────────────────────────────────────
+function renderLoops(q){
+  const sounds=Array(q.soundCount).fill(q.sound).join(' ');
+  const opts=q.opts.map(o=>
+    `<button class="opt-btn" style="font-size:2em;font-weight:bold" onclick="answerLoop(${o})">${o}</button>`
+  ).join('');
+  return `<div class="loop-visual">
+    <div style="font-size:1.05em;color:#555;margin-bottom:8px">${q.prompt}</div>
+    <div class="loop-box">${q.animal} → ${sounds}</div>
+    <div class="loop-times">× ${q.times}</div>
+  </div>
+  <div class="question-text es">¿Cuántas veces en total? / How many total?</div>
+  <div class="options">${opts}</div>`;
+}
+function answerLoop(val){
+  if(answered)return;
+  const q=ACTIVITIES[curAct].questions[curQ];
+  document.querySelectorAll('.opt-btn').forEach(b=>{
+    b.disabled=true;
+    if(parseInt(b.textContent)===q.ans) b.classList.add('correct');
+    else if(parseInt(b.textContent)===val) b.classList.add('wrong');
+  });
+  showFeedback(val===q.ans,
+    val===q.ans?`¡Correcto! ${q.soundCount} × ${q.times} = ${q.ans} 🌟`:`La respuesta era ${q.ans} (${q.soundCount} × ${q.times})`);
+}
+
+// ─── DEBUG ────────────────────────────────────────────────────────
+function renderDebug(q){
+  const steps=q.steps.map((s,i)=>
+    `<div class="debug-step" id="dbg-${i}" onclick="answerDebug(${i})">
+      <span class="step-num">${i+1}</span>
+      <span class="step-emoji">${s.emoji}</span>
+      <span class="step-text">${s.text}</span>
+    </div>`
+  ).join('');
+  return `<div class="question-text es" style="margin:8px 0">${q.prompt}</div>
+    <div class="debug-steps">${steps}</div>
+    <div style="font-size:.88em;color:#888;margin-top:4px">
+      🖱️ Hacé clic en el paso equivocado / Click the wrong step
+    </div>`;
+}
+function answerDebug(idx){
+  if(answered)return;
+  const q=ACTIVITIES[curAct].questions[curQ];
+  document.querySelectorAll('.debug-step').forEach((el,i)=>{
+    el.style.pointerEvents='none';
+    if(q.steps[i].wrong) el.classList.add('correct');
+    else if(i===idx)      el.classList.add('wrong');
+  });
+  showFeedback(q.steps[idx].wrong,
+    q.steps[idx].wrong?'¡Encontraste el error! / Found the bug! 🐛✅':'¡Casi! El paso equivocado está marcado.');
+}
+
+// ─── CONFETTI ─────────────────────────────────────────────────────
+function launchConfetti(){
+  const cv=document.getElementById('confetti-canvas'), ctx=cv.getContext('2d');
+  cv.width=window.innerWidth; cv.height=window.innerHeight;
+  const ps=Array.from({length:140},()=>({
+    x:Math.random()*cv.width, y:Math.random()*-cv.height,
+    r:Math.random()*8+4, c:`hsl(${Math.random()*360},90%,60%)`,
+    speed:Math.random()*4+2, angle:Math.random()*360, spin:(Math.random()-.5)*5
+  }));
+  let fr=0;
+  (function draw(){
+    ctx.clearRect(0,0,cv.width,cv.height);
+    ps.forEach(p=>{
+      ctx.save(); ctx.translate(p.x,p.y); ctx.rotate(p.angle*Math.PI/180);
+      ctx.fillStyle=p.c; ctx.fillRect(-p.r/2,-p.r/2,p.r,p.r*1.5); ctx.restore();
+      p.y+=p.speed; p.angle+=p.spin; if(p.y>cv.height) p.y=-20;
+    });
+    if(++fr<220) requestAnimationFrame(draw);
+    else ctx.clearRect(0,0,cv.width,cv.height);
+  })();
+}
+</script>
+</body>
+</html>

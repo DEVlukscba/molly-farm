@@ -1,0 +1,739 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>Molly's Farm — Coloring Book</title>
+<style>
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+
+  body {
+    font-family: 'Georgia', serif;
+    background: white;
+    color: #222;
+  }
+
+  @media print {
+    .page { page-break-after: always; }
+    .no-print { display: none; }
+    body { background: white; }
+  }
+
+  .no-print {
+    background: #3A6B35;
+    color: white;
+    text-align: center;
+    padding: 16px;
+    font-size: 15px;
+    font-family: Georgia, serif;
+  }
+  .no-print button {
+    background: white;
+    color: #3A6B35;
+    border: none;
+    padding: 8px 24px;
+    border-radius: 20px;
+    font-size: 14px;
+    font-family: Georgia, serif;
+    cursor: pointer;
+    margin-left: 16px;
+    font-weight: bold;
+  }
+
+  /* Each page = A4 portrait */
+  .page {
+    width: 210mm;
+    min-height: 297mm;
+    margin: 0 auto;
+    padding: 14mm 14mm 10mm 14mm;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    border-bottom: 2px dashed #ccc;
+    position: relative;
+    background: white;
+  }
+
+  .page-header {
+    width: 100%;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 6mm;
+  }
+  .farm-badge {
+    font-size: 11pt;
+    color: #7B4F2E;
+    font-style: italic;
+  }
+  .page-num {
+    font-size: 10pt;
+    color: #aaa;
+  }
+
+  .title-block {
+    text-align: center;
+    margin-bottom: 5mm;
+  }
+  .char-name {
+    font-size: 24pt;
+    font-weight: bold;
+    color: #3A6B35;
+    line-height: 1.1;
+  }
+  .char-subtitle {
+    font-size: 12pt;
+    color: #7B4F2E;
+    font-style: italic;
+    margin-top: 2mm;
+  }
+
+  .drawing-area {
+    width: 155mm;
+    height: 155mm;
+    border: 2.5px solid #C8901A;
+    border-radius: 12px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    margin: 4mm 0;
+    background: white;
+    overflow: hidden;
+  }
+
+  .drawing-area svg {
+    width: 100%;
+    height: 100%;
+  }
+
+  .vocab-bar {
+    width: 100%;
+    margin-top: 5mm;
+  }
+  .vocab-title {
+    font-size: 10pt;
+    font-weight: bold;
+    color: #3A6B35;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+    margin-bottom: 3mm;
+    text-align: center;
+  }
+  .vocab-words {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 6px;
+    justify-content: center;
+  }
+  .word-chip {
+    background: #FFF3CD;
+    border: 1.5px solid #C8901A;
+    border-radius: 20px;
+    padding: 3px 12px;
+    font-size: 10pt;
+    color: #7B4F2E;
+    font-weight: bold;
+  }
+
+  .phrase-box {
+    width: 100%;
+    margin-top: 4mm;
+    background: #D6EAD3;
+    border-radius: 8px;
+    padding: 6px 14px;
+    text-align: center;
+  }
+  .phrase-en {
+    font-size: 12pt;
+    color: #3A6B35;
+    font-weight: bold;
+    font-style: italic;
+  }
+  .phrase-es {
+    font-size: 9pt;
+    color: #7B4F2E;
+    margin-top: 2px;
+  }
+
+  /* COVER PAGE */
+  .cover-page {
+    width: 210mm;
+    min-height: 297mm;
+    margin: 0 auto;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    border-bottom: 2px dashed #ccc;
+    background: white;
+    padding: 20mm;
+  }
+  .cover-title {
+    font-size: 36pt;
+    font-weight: bold;
+    color: #3A6B35;
+    text-align: center;
+    line-height: 1.15;
+  }
+  .cover-sub {
+    font-size: 14pt;
+    color: #7B4F2E;
+    text-align: center;
+    font-style: italic;
+    margin-top: 4mm;
+  }
+  .cover-name-line {
+    margin-top: 16mm;
+    font-size: 12pt;
+    color: #555;
+    text-align: center;
+  }
+  .cover-name-line span {
+    display: inline-block;
+    border-bottom: 2px solid #C8901A;
+    min-width: 60mm;
+    margin-left: 4mm;
+  }
+  .color-dots {
+    display: flex;
+    gap: 8px;
+    margin-top: 10mm;
+  }
+  .dot {
+    width: 18px; height: 18px;
+    border-radius: 50%;
+    border: 2px solid #aaa;
+  }
+</style>
+</head>
+<body>
+
+<div class="no-print">
+  🐄 Molly's Farm — Coloring Book &nbsp;|&nbsp; Listo para imprimir
+  <button onclick="window.print()">🖨️ Imprimir / Guardar PDF</button>
+</div>
+
+<!-- ══ COVER ══════════════════════════════════════════════════════════════ -->
+<div class="cover-page">
+  <svg width="120" height="120" viewBox="0 0 120 120">
+    <!-- Simple sun -->
+    <circle cx="60" cy="60" r="28" fill="none" stroke="#C8901A" stroke-width="3.5"/>
+    <line x1="60" y1="10" x2="60" y2="24" stroke="#C8901A" stroke-width="2.5" stroke-linecap="round"/>
+    <line x1="60" y1="96" x2="60" y2="110" stroke="#C8901A" stroke-width="2.5" stroke-linecap="round"/>
+    <line x1="10" y1="60" x2="24" y2="60" stroke="#C8901A" stroke-width="2.5" stroke-linecap="round"/>
+    <line x1="96" y1="60" x2="110" y2="60" stroke="#C8901A" stroke-width="2.5" stroke-linecap="round"/>
+    <line x1="25" y1="25" x2="35" y2="35" stroke="#C8901A" stroke-width="2.5" stroke-linecap="round"/>
+    <line x1="85" y1="85" x2="95" y2="95" stroke="#C8901A" stroke-width="2.5" stroke-linecap="round"/>
+    <line x1="95" y1="25" x2="85" y2="35" stroke="#C8901A" stroke-width="2.5" stroke-linecap="round"/>
+    <line x1="25" y1="95" x2="35" y2="85" stroke="#C8901A" stroke-width="2.5" stroke-linecap="round"/>
+    <!-- Smiley inside sun -->
+    <circle cx="52" cy="55" r="3" fill="none" stroke="#C8901A" stroke-width="1.5"/>
+    <circle cx="68" cy="55" r="3" fill="none" stroke="#C8901A" stroke-width="1.5"/>
+    <path d="M50 67 Q60 75 70 67" fill="none" stroke="#C8901A" stroke-width="2" stroke-linecap="round"/>
+  </svg>
+
+  <div class="cover-title">Molly's Farm<br>Colouring Book</div>
+  <div class="cover-sub">An English Adventure · British English for Little Ones</div>
+
+  <!-- Barn SVG cover art -->
+  <svg width="200" height="130" viewBox="0 0 200 130" style="margin-top:10mm">
+    <!-- Ground -->
+    <rect x="0" y="105" width="200" height="25" rx="4" fill="none" stroke="#3A6B35" stroke-width="2"/>
+    <!-- Barn body -->
+    <rect x="40" y="55" width="120" height="55" rx="4" fill="none" stroke="#7B4F2E" stroke-width="2.5"/>
+    <!-- Roof -->
+    <polygon points="30,55 100,10 170,55" fill="none" stroke="#7B4F2E" stroke-width="2.5"/>
+    <!-- Door -->
+    <rect x="80" y="80" width="40" height="30" rx="3" fill="none" stroke="#7B4F2E" stroke-width="2"/>
+    <!-- Windows -->
+    <rect x="50" y="65" width="20" height="18" rx="2" fill="none" stroke="#C8901A" stroke-width="1.5"/>
+    <line x1="60" y1="65" x2="60" y2="83" stroke="#C8901A" stroke-width="1"/>
+    <line x1="50" y1="74" x2="70" y2="74" stroke="#C8901A" stroke-width="1"/>
+    <rect x="130" y="65" width="20" height="18" rx="2" fill="none" stroke="#C8901A" stroke-width="1.5"/>
+    <line x1="140" y1="65" x2="140" y2="83" stroke="#C8901A" stroke-width="1"/>
+    <line x1="130" y1="74" x2="150" y2="74" stroke="#C8901A" stroke-width="1"/>
+    <!-- Fence posts -->
+    <line x1="10" y1="75" x2="10" y2="105" stroke="#7B4F2E" stroke-width="2"/>
+    <line x1="25" y1="75" x2="25" y2="105" stroke="#7B4F2E" stroke-width="2"/>
+    <line x1="175" y1="75" x2="175" y2="105" stroke="#7B4F2E" stroke-width="2"/>
+    <line x1="190" y1="75" x2="190" y2="105" stroke="#7B4F2E" stroke-width="2"/>
+    <line x1="10" y1="82" x2="35" y2="82" stroke="#7B4F2E" stroke-width="1.5"/>
+    <line x1="10" y1="92" x2="35" y2="92" stroke="#7B4F2E" stroke-width="1.5"/>
+    <line x1="165" y1="82" x2="195" y2="82" stroke="#7B4F2E" stroke-width="1.5"/>
+    <line x1="165" y1="92" x2="195" y2="92" stroke="#7B4F2E" stroke-width="1.5"/>
+    <!-- Clouds -->
+    <ellipse cx="30" cy="20" rx="18" ry="10" fill="none" stroke="#aaa" stroke-width="1.5"/>
+    <ellipse cx="48" cy="16" rx="12" ry="8" fill="none" stroke="#aaa" stroke-width="1.5"/>
+    <ellipse cx="158" cy="25" rx="16" ry="9" fill="none" stroke="#aaa" stroke-width="1.5"/>
+  </svg>
+
+  <div class="cover-name-line">Elena's book &nbsp;<span>&nbsp;</span></div>
+  <div class="color-dots">
+    <div class="dot" style="background:#FFC0CB"></div>
+    <div class="dot" style="background:#90EE90"></div>
+    <div class="dot" style="background:#87CEEB"></div>
+    <div class="dot" style="background:#FFD700"></div>
+    <div class="dot" style="background:#DDA0DD"></div>
+    <div class="dot" style="background:#FFA500"></div>
+  </div>
+  <div style="margin-top:6mm;font-size:9pt;color:#aaa;text-align:center;">Use your favourite colours! · ¡Usá tus colores favoritos!</div>
+</div>
+
+<!-- ══ PAGE 1: MOLLY ═══════════════════════════════════════════════════════ -->
+<div class="page">
+  <div class="page-header">
+    <span class="farm-badge">🌾 Molly's Farm Colouring Book</span>
+    <span class="page-num">1 · Molly</span>
+  </div>
+  <div class="title-block">
+    <div class="char-name">🐄 Molly the Cow</div>
+    <div class="char-subtitle">"Let's find out together!"</div>
+  </div>
+  <div class="drawing-area">
+    <svg viewBox="0 0 320 300" xmlns="http://www.w3.org/2000/svg">
+      <!-- Body -->
+      <ellipse cx="160" cy="185" rx="88" ry="72" fill="none" stroke="#333" stroke-width="3"/>
+      <!-- Head -->
+      <ellipse cx="160" cy="88" rx="58" ry="52" fill="none" stroke="#333" stroke-width="3"/>
+      <!-- Ears -->
+      <ellipse cx="100" cy="72" rx="18" ry="12" fill="none" stroke="#333" stroke-width="2.5" transform="rotate(-20,100,72)"/>
+      <ellipse cx="220" cy="72" rx="18" ry="12" fill="none" stroke="#333" stroke-width="2.5" transform="rotate(20,220,72)"/>
+      <!-- Horns -->
+      <path d="M110 48 Q98 20 118 30" fill="none" stroke="#333" stroke-width="2.5" stroke-linecap="round"/>
+      <path d="M210 48 Q222 20 202 30" fill="none" stroke="#333" stroke-width="2.5" stroke-linecap="round"/>
+      <!-- Eyes -->
+      <circle cx="138" cy="78" r="9" fill="none" stroke="#333" stroke-width="2.5"/>
+      <circle cx="182" cy="78" r="9" fill="none" stroke="#333" stroke-width="2.5"/>
+      <circle cx="141" cy="76" r="3.5" fill="#333"/>
+      <circle cx="185" cy="76" r="3.5" fill="#333"/>
+      <!-- Nostrils -->
+      <ellipse cx="150" cy="108" rx="8" ry="5" fill="none" stroke="#333" stroke-width="2"/>
+      <ellipse cx="170" cy="108" rx="8" ry="5" fill="none" stroke="#333" stroke-width="2"/>
+      <!-- Smile -->
+      <path d="M140 120 Q160 135 180 120" fill="none" stroke="#333" stroke-width="2.5" stroke-linecap="round"/>
+      <!-- Neck -->
+      <path d="M132 136 L130 152" fill="none" stroke="#333" stroke-width="2.5"/>
+      <path d="M188 136 L190 152" fill="none" stroke="#333" stroke-width="2.5"/>
+      <!-- Spots on body -->
+      <ellipse cx="140" cy="175" rx="22" ry="16" fill="none" stroke="#555" stroke-width="1.5" stroke-dasharray="4,3"/>
+      <ellipse cx="195" cy="200" rx="16" ry="12" fill="none" stroke="#555" stroke-width="1.5" stroke-dasharray="4,3"/>
+      <ellipse cx="155" cy="215" rx="12" ry="8" fill="none" stroke="#555" stroke-width="1.5" stroke-dasharray="4,3"/>
+      <!-- Legs -->
+      <rect x="110" y="245" width="22" height="48" rx="10" fill="none" stroke="#333" stroke-width="2.5"/>
+      <rect x="140" y="245" width="22" height="48" rx="10" fill="none" stroke="#333" stroke-width="2.5"/>
+      <rect x="165" y="245" width="22" height="48" rx="10" fill="none" stroke="#333" stroke-width="2.5"/>
+      <rect x="195" y="245" width="22" height="48" rx="10" fill="none" stroke="#333" stroke-width="2.5"/>
+      <!-- Tail -->
+      <path d="M246 185 Q276 160 268 200 Q260 235 280 248" fill="none" stroke="#333" stroke-width="2.5" stroke-linecap="round"/>
+      <!-- Udder -->
+      <ellipse cx="160" cy="255" rx="30" ry="16" fill="none" stroke="#333" stroke-width="2"/>
+      <!-- Bell -->
+      <rect x="150" y="140" width="20" height="16" rx="4" fill="none" stroke="#C8901A" stroke-width="2"/>
+      <circle cx="160" cy="158" r="3" fill="none" stroke="#C8901A" stroke-width="1.5"/>
+      <!-- Grass line -->
+      <path d="M20 292 Q80 278 160 292 Q240 306 300 292" fill="none" stroke="#3A6B35" stroke-width="2"/>
+    </svg>
+  </div>
+  <div class="vocab-bar">
+    <div class="vocab-title">Colour Molly! — Vocabulary</div>
+    <div class="vocab-words">
+      <span class="word-chip">cow 🐄</span>
+      <span class="word-chip">spots</span>
+      <span class="word-chip">horns</span>
+      <span class="word-chip">ears</span>
+      <span class="word-chip">tail</span>
+      <span class="word-chip">bell 🔔</span>
+      <span class="word-chip">black &amp; white</span>
+    </div>
+  </div>
+  <div class="phrase-box">
+    <div class="phrase-en">"Hello! My name is Molly. I live on a farm!"</div>
+    <div class="phrase-es">Hola, me llamo Molly. ¡Vivo en una granja!</div>
+  </div>
+</div>
+
+<!-- ══ PAGE 2: BISCUIT ════════════════════════════════════════════════════ -->
+<div class="page">
+  <div class="page-header">
+    <span class="farm-badge">🌾 Molly's Farm Colouring Book</span>
+    <span class="page-num">2 · Biscuit</span>
+  </div>
+  <div class="title-block">
+    <div class="char-name">🐑 Biscuit the Sheep</div>
+    <div class="char-subtitle">"One, two, three... let me count!"</div>
+  </div>
+  <div class="drawing-area">
+    <svg viewBox="0 0 320 300" xmlns="http://www.w3.org/2000/svg">
+      <!-- Fluffy body made of cloud-like circles -->
+      <circle cx="160" cy="200" r="62" fill="none" stroke="#333" stroke-width="2.5"/>
+      <circle cx="115" cy="180" r="32" fill="none" stroke="#333" stroke-width="2"/>
+      <circle cx="205" cy="180" r="32" fill="none" stroke="#333" stroke-width="2"/>
+      <circle cx="135" cy="155" r="28" fill="none" stroke="#333" stroke-width="2"/>
+      <circle cx="185" cy="155" r="28" fill="none" stroke="#333" stroke-width="2"/>
+      <circle cx="160" cy="145" r="28" fill="none" stroke="#333" stroke-width="2"/>
+      <circle cx="118" cy="210" r="26" fill="none" stroke="#333" stroke-width="2"/>
+      <circle cx="202" cy="210" r="26" fill="none" stroke="#333" stroke-width="2"/>
+      <circle cx="160" cy="230" r="25" fill="none" stroke="#333" stroke-width="2"/>
+      <!-- Head (darker area, not fluffy) -->
+      <ellipse cx="160" cy="102" rx="38" ry="35" fill="white" stroke="#333" stroke-width="2.5"/>
+      <!-- Ears -->
+      <ellipse cx="122" cy="95" rx="12" ry="20" fill="white" stroke="#333" stroke-width="2" transform="rotate(-15,122,95)"/>
+      <ellipse cx="198" cy="95" rx="12" ry="20" fill="white" stroke="#333" stroke-width="2" transform="rotate(15,198,95)"/>
+      <!-- Eyes -->
+      <circle cx="146" cy="96" r="7" fill="none" stroke="#333" stroke-width="2"/>
+      <circle cx="174" cy="96" r="7" fill="none" stroke="#333" stroke-width="2"/>
+      <circle cx="148" cy="95" r="2.5" fill="#333"/>
+      <circle cx="176" cy="95" r="2.5" fill="#333"/>
+      <!-- Nose -->
+      <ellipse cx="160" cy="114" rx="14" ry="9" fill="none" stroke="#333" stroke-width="2"/>
+      <ellipse cx="154" cy="114" rx="4" ry="3" fill="none" stroke="#333" stroke-width="1.5"/>
+      <ellipse cx="166" cy="114" rx="4" ry="3" fill="none" stroke="#333" stroke-width="1.5"/>
+      <!-- Smile -->
+      <path d="M150 122 Q160 130 170 122" fill="none" stroke="#333" stroke-width="2" stroke-linecap="round"/>
+      <!-- Legs -->
+      <rect x="118" y="252" width="18" height="42" rx="8" fill="none" stroke="#333" stroke-width="2.5"/>
+      <rect x="142" y="252" width="18" height="42" rx="8" fill="none" stroke="#333" stroke-width="2.5"/>
+      <rect x="162" y="252" width="18" height="42" rx="8" fill="none" stroke="#333" stroke-width="2.5"/>
+      <rect x="186" y="252" width="18" height="42" rx="8" fill="none" stroke="#333" stroke-width="2.5"/>
+      <!-- Stars above (for the sleeping story) -->
+      <text x="55" y="55" font-size="18" fill="none" stroke="#C8901A" stroke-width="1">★</text>
+      <text x="88" y="38" font-size="12" fill="none" stroke="#C8901A" stroke-width="1">★</text>
+      <text x="230" y="48" font-size="16" fill="none" stroke="#C8901A" stroke-width="1">★</text>
+      <text x="258" y="30" font-size="10" fill="none" stroke="#C8901A" stroke-width="1">★</text>
+      <!-- Grass -->
+      <path d="M20 292 Q80 278 160 292 Q240 306 300 292" fill="none" stroke="#3A6B35" stroke-width="2"/>
+    </svg>
+  </div>
+  <div class="vocab-bar">
+    <div class="vocab-title">Colour Biscuit! — Vocabulary</div>
+    <div class="vocab-words">
+      <span class="word-chip">sheep 🐑</span>
+      <span class="word-chip">fluffy</span>
+      <span class="word-chip">wool</span>
+      <span class="word-chip">white</span>
+      <span class="word-chip">stars ★</span>
+      <span class="word-chip">count</span>
+      <span class="word-chip">soft</span>
+    </div>
+  </div>
+  <div class="phrase-box">
+    <div class="phrase-en">"One, two, three stars! I love counting!"</div>
+    <div class="phrase-es">¡Una, dos, tres estrellas! ¡Me encanta contar!</div>
+  </div>
+</div>
+
+<!-- ══ PAGE 3: PIP ════════════════════════════════════════════════════════ -->
+<div class="page">
+  <div class="page-header">
+    <span class="farm-badge">🌾 Molly's Farm Colouring Book</span>
+    <span class="page-num">3 · Pip</span>
+  </div>
+  <div class="title-block">
+    <div class="char-name">🐷 Pip the Pig</div>
+    <div class="char-subtitle">"Oops! More mud, please!"</div>
+  </div>
+  <div class="drawing-area">
+    <svg viewBox="0 0 320 300" xmlns="http://www.w3.org/2000/svg">
+      <!-- Body -->
+      <ellipse cx="160" cy="195" rx="90" ry="75" fill="none" stroke="#333" stroke-width="3"/>
+      <!-- Head -->
+      <circle cx="160" cy="100" r="58" fill="none" stroke="#333" stroke-width="3"/>
+      <!-- Ears (floppy pig ears) -->
+      <path d="M105 60 Q88 20 118 48" fill="none" stroke="#333" stroke-width="2.5"/>
+      <path d="M215 60 Q232 20 202 48" fill="none" stroke="#333" stroke-width="2.5"/>
+      <!-- Eyes -->
+      <circle cx="138" cy="88" r="9" fill="none" stroke="#333" stroke-width="2.5"/>
+      <circle cx="182" cy="88" r="9" fill="none" stroke="#333" stroke-width="2.5"/>
+      <circle cx="140" cy="87" r="3.5" fill="#333"/>
+      <circle cx="184" cy="87" r="3.5" fill="#333"/>
+      <!-- Snout -->
+      <ellipse cx="160" cy="118" rx="26" ry="18" fill="none" stroke="#333" stroke-width="2.5"/>
+      <ellipse cx="151" cy="118" rx="7" ry="5" fill="none" stroke="#333" stroke-width="2"/>
+      <ellipse cx="169" cy="118" rx="7" ry="5" fill="none" stroke="#333" stroke-width="2"/>
+      <!-- Happy smile -->
+      <path d="M136 136 Q160 155 184 136" fill="none" stroke="#333" stroke-width="2.5" stroke-linecap="round"/>
+      <!-- Mud splats -->
+      <ellipse cx="128" cy="185" rx="18" ry="11" fill="none" stroke="#555" stroke-width="1.5" stroke-dasharray="3,2"/>
+      <ellipse cx="195" cy="205" rx="14" ry="9" fill="none" stroke="#555" stroke-width="1.5" stroke-dasharray="3,2"/>
+      <ellipse cx="158" cy="220" rx="10" ry="7" fill="none" stroke="#555" stroke-width="1.5" stroke-dasharray="3,2"/>
+      <ellipse cx="88" cy="218" rx="12" ry="8" fill="none" stroke="#555" stroke-width="1.5" stroke-dasharray="3,2"/>
+      <!-- Curly tail -->
+      <path d="M248 185 Q276 170 270 195 Q264 220 280 230" fill="none" stroke="#333" stroke-width="2.5" stroke-linecap="round"/>
+      <!-- Legs -->
+      <rect x="110" y="255" width="22" height="38" rx="11" fill="none" stroke="#333" stroke-width="2.5"/>
+      <rect x="140" y="255" width="22" height="38" rx="11" fill="none" stroke="#333" stroke-width="2.5"/>
+      <rect x="162" y="255" width="22" height="38" rx="11" fill="none" stroke="#333" stroke-width="2.5"/>
+      <rect x="192" y="255" width="22" height="38" rx="11" fill="none" stroke="#333" stroke-width="2.5"/>
+      <!-- Paint brush in hand area -->
+      <line x1="68" y1="190" x2="102" y2="220" stroke="#333" stroke-width="3" stroke-linecap="round"/>
+      <rect x="56" y="172" width="18" height="26" rx="4" fill="none" stroke="#C8901A" stroke-width="2"/>
+      <!-- Grass -->
+      <path d="M20 292 Q80 278 160 292 Q240 306 300 292" fill="none" stroke="#3A6B35" stroke-width="2"/>
+    </svg>
+  </div>
+  <div class="vocab-bar">
+    <div class="vocab-title">Colour Pip! — Vocabulary</div>
+    <div class="vocab-words">
+      <span class="word-chip">pig 🐷</span>
+      <span class="word-chip">pink</span>
+      <span class="word-chip">mud</span>
+      <span class="word-chip">snout</span>
+      <span class="word-chip">tail</span>
+      <span class="word-chip">paint 🖌️</span>
+      <span class="word-chip">messy</span>
+    </div>
+  </div>
+  <div class="phrase-box">
+    <div class="phrase-en">"I'm pink! Pink like a flower!"</div>
+    <div class="phrase-es">¡Soy rosado! ¡Rosado como una flor!</div>
+  </div>
+</div>
+
+<!-- ══ PAGE 4: THUNDER ════════════════════════════════════════════════════ -->
+<div class="page">
+  <div class="page-header">
+    <span class="farm-badge">🌾 Molly's Farm Colouring Book</span>
+    <span class="page-num">4 · Thunder</span>
+  </div>
+  <div class="title-block">
+    <div class="char-name">🐴 Thunder the Horse</div>
+    <div class="char-subtitle">"Come on, let's go!"</div>
+  </div>
+  <div class="drawing-area">
+    <svg viewBox="0 0 320 300" xmlns="http://www.w3.org/2000/svg">
+      <!-- Body -->
+      <ellipse cx="165" cy="195" rx="98" ry="70" fill="none" stroke="#333" stroke-width="3"/>
+      <!-- Neck -->
+      <path d="M95 155 Q85 120 108 98" fill="none" stroke="#333" stroke-width="3"/>
+      <path d="M120 148 Q118 115 138 98" fill="none" stroke="#333" stroke-width="3"/>
+      <!-- Head -->
+      <ellipse cx="123" cy="80" rx="38" ry="48" fill="none" stroke="#333" stroke-width="3" transform="rotate(-15,123,80)"/>
+      <!-- Ear -->
+      <path d="M105 45 Q98 22 118 38" fill="none" stroke="#333" stroke-width="2.5"/>
+      <path d="M142 38 Q152 18 158 38" fill="none" stroke="#333" stroke-width="2.5"/>
+      <!-- Eye -->
+      <circle cx="104" cy="72" r="8" fill="none" stroke="#333" stroke-width="2.5"/>
+      <circle cx="106" cy="71" r="3" fill="#333"/>
+      <!-- Nostril -->
+      <ellipse cx="90" cy="102" rx="7" ry="5" fill="none" stroke="#333" stroke-width="2"/>
+      <!-- Mane -->
+      <path d="M118 40 Q130 55 128 70 Q126 85 138 95" fill="none" stroke="#333" stroke-width="2" stroke-dasharray="5,3"/>
+      <path d="M128 42 Q142 58 140 72" fill="none" stroke="#333" stroke-width="2" stroke-dasharray="5,3"/>
+      <path d="M138 38 Q150 55 148 70" fill="none" stroke="#333" stroke-width="2" stroke-dasharray="5,3"/>
+      <!-- Legs -->
+      <rect x="90" y="250" width="22" height="44" rx="8" fill="none" stroke="#333" stroke-width="2.5"/>
+      <rect x="120" y="250" width="22" height="44" rx="8" fill="none" stroke="#333" stroke-width="2.5"/>
+      <rect x="185" y="250" width="22" height="44" rx="8" fill="none" stroke="#333" stroke-width="2.5"/>
+      <rect x="218" y="250" width="22" height="44" rx="8" fill="none" stroke="#333" stroke-width="2.5"/>
+      <!-- Tail -->
+      <path d="M260 185 Q290 160 285 195 Q280 228 298 248" fill="none" stroke="#333" stroke-width="2.5" stroke-linecap="round"/>
+      <path d="M263 188 Q292 175 288 200" fill="none" stroke="#333" stroke-width="2" stroke-dasharray="4,3"/>
+      <!-- Horseshoe hint -->
+      <path d="M93 292 Q101 300 112 292" fill="none" stroke="#C8901A" stroke-width="2"/>
+      <path d="M123 292 Q131 300 142 292" fill="none" stroke="#C8901A" stroke-width="2"/>
+      <!-- Trees in background -->
+      <circle cx="282" cy="140" r="22" fill="none" stroke="#3A6B35" stroke-width="1.5"/>
+      <line x1="282" y1="162" x2="282" y2="188" stroke="#7B4F2E" stroke-width="2"/>
+      <circle cx="30" cy="148" r="18" fill="none" stroke="#3A6B35" stroke-width="1.5"/>
+      <line x1="30" y1="166" x2="30" y2="188" stroke="#7B4F2E" stroke-width="2"/>
+      <!-- Grass -->
+      <path d="M20 292 Q80 278 160 292 Q240 306 300 292" fill="none" stroke="#3A6B35" stroke-width="2"/>
+    </svg>
+  </div>
+  <div class="vocab-bar">
+    <div class="vocab-title">Colour Thunder! — Vocabulary</div>
+    <div class="vocab-words">
+      <span class="word-chip">horse 🐴</span>
+      <span class="word-chip">brown</span>
+      <span class="word-chip">mane</span>
+      <span class="word-chip">tail</span>
+      <span class="word-chip">big</span>
+      <span class="word-chip">fast</span>
+      <span class="word-chip">tree 🌳</span>
+    </div>
+  </div>
+  <div class="phrase-box">
+    <div class="phrase-en">"I am big and fast. I love to explore!"</div>
+    <div class="phrase-es">¡Soy grande y rápido. ¡Me encanta explorar!</div>
+  </div>
+</div>
+
+<!-- ══ PAGE 5: BINGO ══════════════════════════════════════════════════════ -->
+<div class="page">
+  <div class="page-header">
+    <span class="farm-badge">🌾 Molly's Farm Colouring Book</span>
+    <span class="page-num">5 · Bingo</span>
+  </div>
+  <div class="title-block">
+    <div class="char-name">🐕 Bingo the Dog</div>
+    <div class="char-subtitle">"I know! I know!"</div>
+  </div>
+  <div class="drawing-area">
+    <svg viewBox="0 0 320 300" xmlns="http://www.w3.org/2000/svg">
+      <!-- Body -->
+      <ellipse cx="160" cy="200" rx="80" ry="65" fill="none" stroke="#333" stroke-width="3"/>
+      <!-- Head -->
+      <circle cx="160" cy="105" r="52" fill="none" stroke="#333" stroke-width="3"/>
+      <!-- Floppy ears -->
+      <path d="M108 78 Q72 68 80 118 Q84 138 108 128" fill="none" stroke="#333" stroke-width="2.5"/>
+      <path d="M212 78 Q248 68 240 118 Q236 138 212 128" fill="none" stroke="#333" stroke-width="2.5"/>
+      <!-- Eyes -->
+      <circle cx="143" cy="95" r="9" fill="none" stroke="#333" stroke-width="2.5"/>
+      <circle cx="177" cy="95" r="9" fill="none" stroke="#333" stroke-width="2.5"/>
+      <circle cx="145" cy="94" r="3.5" fill="#333"/>
+      <circle cx="179" cy="94" r="3.5" fill="#333"/>
+      <!-- Eyebrow marks -->
+      <path d="M135 82 Q143 78 151 82" fill="none" stroke="#555" stroke-width="1.5"/>
+      <path d="M169 82 Q177 78 185 82" fill="none" stroke="#555" stroke-width="1.5"/>
+      <!-- Nose -->
+      <ellipse cx="160" cy="118" rx="14" ry="10" fill="#333" stroke="#333" stroke-width="1"/>
+      <!-- Smile + tongue -->
+      <path d="M140 132 Q160 148 180 132" fill="none" stroke="#333" stroke-width="2.5" stroke-linecap="round"/>
+      <ellipse cx="160" cy="148" rx="12" ry="9" fill="none" stroke="#333" stroke-width="2"/>
+      <!-- Neck -->
+      <path d="M132 155 L128 165" fill="none" stroke="#333" stroke-width="2.5"/>
+      <path d="M188 155 L192 165" fill="none" stroke="#333" stroke-width="2.5"/>
+      <!-- Collar -->
+      <rect x="128" y="155" width="64" height="12" rx="6" fill="none" stroke="#C8901A" stroke-width="2.5"/>
+      <circle cx="160" cy="168" r="5" fill="none" stroke="#C8901A" stroke-width="2"/>
+      <!-- Legs -->
+      <rect x="110" y="252" width="20" height="40" rx="10" fill="none" stroke="#333" stroke-width="2.5"/>
+      <rect x="138" y="252" width="20" height="40" rx="10" fill="none" stroke="#333" stroke-width="2.5"/>
+      <rect x="162" y="252" width="20" height="40" rx="10" fill="none" stroke="#333" stroke-width="2.5"/>
+      <rect x="190" y="252" width="20" height="40" rx="10" fill="none" stroke="#333" stroke-width="2.5"/>
+      <!-- Wagging tail -->
+      <path d="M238 192 Q265 168 272 200 Q275 218 258 228" fill="none" stroke="#333" stroke-width="2.5" stroke-linecap="round"/>
+      <!-- Paw spots -->
+      <circle cx="135" cy="285" r="3" fill="none" stroke="#333" stroke-width="1.5"/>
+      <circle cx="128" cy="288" r="2.5" fill="none" stroke="#333" stroke-width="1.5"/>
+      <circle cx="142" cy="288" r="2.5" fill="none" stroke="#333" stroke-width="1.5"/>
+      <!-- Grass -->
+      <path d="M20 292 Q80 278 160 292 Q240 306 300 292" fill="none" stroke="#3A6B35" stroke-width="2"/>
+    </svg>
+  </div>
+  <div class="vocab-bar">
+    <div class="vocab-title">Colour Bingo! — Vocabulary</div>
+    <div class="vocab-words">
+      <span class="word-chip">dog 🐕</span>
+      <span class="word-chip">ears</span>
+      <span class="word-chip">tail</span>
+      <span class="word-chip">collar</span>
+      <span class="word-chip">paws</span>
+      <span class="word-chip">happy</span>
+      <span class="word-chip">clever</span>
+    </div>
+  </div>
+  <div class="phrase-box">
+    <div class="phrase-en">"Woof! I know all the words on the farm!"</div>
+    <div class="phrase-es">¡Guau! ¡Conozco todas las palabras de la granja!</div>
+  </div>
+</div>
+
+<!-- ══ PAGE 6: THE FARM SCENE ════════════════════════════════════════════ -->
+<div class="page">
+  <div class="page-header">
+    <span class="farm-badge">🌾 Molly's Farm Colouring Book</span>
+    <span class="page-num">6 · The Farm</span>
+  </div>
+  <div class="title-block">
+    <div class="char-name">🏡 Welcome to Molly's Farm!</div>
+    <div class="char-subtitle">Colour the whole farm!</div>
+  </div>
+  <div class="drawing-area">
+    <svg viewBox="0 0 340 290" xmlns="http://www.w3.org/2000/svg">
+      <!-- Sky / ground -->
+      <line x1="0" y1="200" x2="340" y2="200" stroke="#3A6B35" stroke-width="1.5" stroke-dasharray="4,3"/>
+      <!-- Sun -->
+      <circle cx="290" cy="38" r="22" fill="none" stroke="#C8901A" stroke-width="2.5"/>
+      <line x1="290" y1="8" x2="290" y2="2" stroke="#C8901A" stroke-width="2" stroke-linecap="round"/>
+      <line x1="290" y1="68" x2="290" y2="74" stroke="#C8901A" stroke-width="2" stroke-linecap="round"/>
+      <line x1="260" y1="38" x2="254" y2="38" stroke="#C8901A" stroke-width="2" stroke-linecap="round"/>
+      <line x1="320" y1="38" x2="326" y2="38" stroke="#C8901A" stroke-width="2" stroke-linecap="round"/>
+      <line x1="269" y1="17" x2="265" y2="13" stroke="#C8901A" stroke-width="2" stroke-linecap="round"/>
+      <line x1="311" y1="59" x2="315" y2="63" stroke="#C8901A" stroke-width="2" stroke-linecap="round"/>
+      <line x1="311" y1="17" x2="315" y2="13" stroke="#C8901A" stroke-width="2" stroke-linecap="round"/>
+      <line x1="269" y1="59" x2="265" y2="63" stroke="#C8901A" stroke-width="2" stroke-linecap="round"/>
+      <!-- Clouds -->
+      <ellipse cx="60" cy="28" rx="28" ry="14" fill="none" stroke="#aaa" stroke-width="1.5"/>
+      <ellipse cx="85" cy="22" rx="18" ry="11" fill="none" stroke="#aaa" stroke-width="1.5"/>
+      <ellipse cx="40" cy="24" rx="16" ry="10" fill="none" stroke="#aaa" stroke-width="1.5"/>
+      <ellipse cx="180" cy="35" rx="22" ry="12" fill="none" stroke="#aaa" stroke-width="1.5"/>
+      <!-- BARN -->
+      <rect x="100" y="100" width="130" height="105" rx="4" fill="none" stroke="#7B4F2E" stroke-width="2.5"/>
+      <polygon points="88,100 165,45 242,100" fill="none" stroke="#7B4F2E" stroke-width="2.5"/>
+      <!-- Barn door -->
+      <rect x="140" y="158" width="50" height="47" rx="3" fill="none" stroke="#7B4F2E" stroke-width="2"/>
+      <line x1="165" y1="158" x2="165" y2="205" stroke="#7B4F2E" stroke-width="1.5"/>
+      <circle cx="158" cy="182" r="3" fill="none" stroke="#C8901A" stroke-width="1.5"/>
+      <circle cx="172" cy="182" r="3" fill="none" stroke="#C8901A" stroke-width="1.5"/>
+      <!-- Barn windows -->
+      <rect x="112" y="115" width="28" height="22" rx="3" fill="none" stroke="#C8901A" stroke-width="1.5"/>
+      <line x1="126" y1="115" x2="126" y2="137" stroke="#C8901A" stroke-width="1"/>
+      <line x1="112" y1="126" x2="140" y2="126" stroke="#C8901A" stroke-width="1"/>
+      <rect x="192" y="115" width="28" height="22" rx="3" fill="none" stroke="#C8901A" stroke-width="1.5"/>
+      <line x1="206" y1="115" x2="206" y2="137" stroke="#C8901A" stroke-width="1"/>
+      <line x1="192" y1="126" x2="220" y2="126" stroke="#C8901A" stroke-width="1"/>
+      <!-- Roof window -->
+      <ellipse cx="165" cy="66" rx="14" ry="10" fill="none" stroke="#C8901A" stroke-width="1.5"/>
+      <!-- FENCE left -->
+      <line x1="10" y1="140" x2="10" y2="200" stroke="#7B4F2E" stroke-width="2.5"/>
+      <line x1="30" y1="140" x2="30" y2="200" stroke="#7B4F2E" stroke-width="2.5"/>
+      <line x1="50" y1="140" x2="50" y2="200" stroke="#7B4F2E" stroke-width="2.5"/>
+      <line x1="70" y1="140" x2="70" y2="200" stroke="#7B4F2E" stroke-width="2.5"/>
+      <line x1="90" y1="140" x2="90" y2="200" stroke="#7B4F2E" stroke-width="2.5"/>
+      <line x1="10" y1="155" x2="100" y2="155" stroke="#7B4F2E" stroke-width="1.5"/>
+      <line x1="10" y1="175" x2="100" y2="175" stroke="#7B4F2E" stroke-width="1.5"/>
+      <!-- FENCE right -->
+      <line x1="240" y1="140" x2="240" y2="200" stroke="#7B4F2E" stroke-width="2.5"/>
+      <line x1="260" y1="140" x2="260" y2="200" stroke="#7B4F2E" stroke-width="2.5"/>
+      <line x1="280" y1="140" x2="280" y2="200" stroke="#7B4F2E" stroke-width="2.5"/>
+      <line x1="300" y1="140" x2="300" y2="200" stroke="#7B4F2E" stroke-width="2.5"/>
+      <line x1="320" y1="140" x2="320" y2="200" stroke="#7B4F2E" stroke-width="2.5"/>
+      <line x1="240" y1="155" x2="330" y2="155" stroke="#7B4F2E" stroke-width="1.5"/>
+      <line x1="240" y1="175" x2="330" y2="175" stroke="#7B4F2E" stroke-width="1.5"/>
+      <!-- Trees -->
+      <circle cx="28" cy="100" r="28" fill="none" stroke="#3A6B35" stroke-width="2"/>
+      <circle cx="18" cy="88" r="18" fill="none" stroke="#3A6B35" stroke-width="2"/>
+      <circle cx="40" cy="86" r="20" fill="none" stroke="#3A6B35" stroke-width="2"/>
+      <line x1="28" y1="128" x2="28" y2="200" stroke="#7B4F2E" stroke-width="2.5"/>
+      <circle cx="310" cy="96" r="26" fill="none" stroke="#3A6B35" stroke-width="2"/>
+      <circle cx="300" cy="85" r="18" fill="none" stroke="#3A6B35" stroke-width="2"/>
+      <line x1="310" y1="122" x2="310" y2="200" stroke="#7B4F2E" stroke-width="2.5"/>
+      <!-- Flowers -->
+      <circle cx="55" cy="200" r="6" fill="none" stroke="#C8901A" stroke-width="1.5"/>
+      <circle cx="55" cy="192" r="4" fill="none" stroke="#C8901A" stroke-width="1.5"/>
+      <circle cx="48" cy="197" r="4" fill="none" stroke="#C8901A" stroke-width="1.5"/>
+      <circle cx="62" cy="197" r="4" fill="none" stroke="#C8901A" stroke-width="1.5"/>
+      <circle cx="270" cy="200" r="6" fill="none" stroke="#C8901A" stroke-width="1.5"/>
+      <circle cx="270" cy="192" r="4" fill="none" stroke="#C8901A" stroke-width="1.5"/>
+      <!-- Ground hills -->
+      <path d="M0 200 Q85 218 170 200 Q255 182 340 200 L340 290 L0 290 Z" fill="none" stroke="#3A6B35" stroke-width="2"/>
+      <!-- Water trough -->
+      <rect x="8" y="205" width="58" height="18" rx="5" fill="none" stroke="#7B4F2E" stroke-width="2"/>
+      <!-- Hay bale -->
+      <ellipse cx="300" cy="212" rx="22" ry="16" fill="none" stroke="#C8901A" stroke-width="2"/>
+      <line x1="300" y1="196" x2="300" y2="228" stroke="#C8901A" stroke-width="1.5" stroke-dasharray="3,2"/>
+      <line x1="278" y1="212" x2="322" y2="212" stroke="#C8901A" stroke-width="1.5" stroke-dasharray="3,2"/>
+    </svg>
+  </div>
+  <div class="vocab-bar">
+    <div class="vocab-title">Label the Farm! — Vocabulary</div>
+    <div class="vocab-words">
+      <span class="word-chip">barn 🏠</span>
+      <span class="word-chip">fence</span>
+      <span class="word-chip">tree 🌳</span>
+      <span class="word-chip">sun ☀️</span>
+      <span class="word-chip">cloud ☁️</span>
+      <span class="word-chip">flower 🌸</span>
+      <span class="word-chip">hay</span>
+      <span class="word-chip">door</span>
+      <span class="word-chip">window</span>
+    </div>
+  </div>
+  <div class="phrase-box">
+    <div class="phrase-en">"This is Molly's farm. It is big and beautiful!"</div>
+    <div class="phrase-es">¡Esta es la granja de Molly. ¡Es grande y hermosa!</div>
+  </div>
+</div>
+
+</body>
+</html>

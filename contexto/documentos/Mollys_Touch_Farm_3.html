@@ -1,0 +1,837 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<title>Molly's Touch Farm 3</title>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Baloo+2:wght@500;700;800&display=swap">
+<style>
+/* Layout: one-screen app — barra superior fija, área de juego que llena el resto, botones grandes para dedos de 5 años.
+   Single bright "día de campo" look, deliberately light-only. */
+:root {
+  --sky:    #DDF1FB;
+  --grass:  #7BC043;
+  --grass-d:#4E8A2A;
+  --barn:   #C8452F;
+  --wheat:  #F6C445;
+  --soil:   #6B4A2E;
+  --paper:  #FFFDF6;
+  --ink:    #3A2A1C;
+  --muted:  #7A6A58;
+  --ok:     #2E9E4F;
+  --oops:   #D9534F;
+  --line:   #E6DCC8;
+  --display: 'Baloo 2', 'Comic Sans MS', 'Chalkboard SE', 'Arial Rounded MT Bold', sans-serif;
+  --body:    'Baloo 2', 'Comic Sans MS', 'Arial Rounded MT Bold', Arial, sans-serif;
+  color-scheme: light;
+}
+[hidden] { display:none!important; }
+* { box-sizing:border-box; -webkit-tap-highlight-color:transparent; }
+html, body { height:100%; }
+body {
+  margin:0; background:var(--sky); color:var(--ink); font-family:var(--body);
+  -webkit-user-select:none; user-select:none; overscroll-behavior:none;
+}
+button { font-family:inherit; color:inherit; }
+button:focus-visible { outline:4px solid var(--wheat); outline-offset:2px; }
+
+.app { min-height:100%; display:flex; flex-direction:column; }
+
+/* TOP BAR */
+.bar {
+  position:sticky; top:env(safe-area-inset-top,0px); z-index:5;
+  display:flex; align-items:center; gap:10px; padding:10px 16px;
+  background:var(--barn); color:#FFF8EC;
+  box-shadow:0 3px 0 rgba(0,0,0,.12);
+}
+.bar h1 { font-family:var(--display); font-size:1.25rem; margin:0; flex:1; line-height:1.1; font-weight:800; }
+.bar .round { font-size:.95rem; font-weight:700; background:rgba(255,255,255,.18); border-radius:999px; padding:2px 12px; white-space:nowrap; }
+.icon-btn {
+  width:48px; height:48px; border-radius:14px; border:none; background:rgba(255,255,255,.2);
+  font-size:1.5rem; display:grid; place-items:center; cursor:pointer; color:#FFF8EC;
+}
+
+/* SCREENS */
+.screen { flex:1; display:flex; flex-direction:column; padding:14px 16px 20px; gap:12px; max-width:560px; width:100%; margin:0 auto; }
+.screen[hidden] { display:none!important; }
+
+/* HOME */
+.hero { text-align:center; padding-top:6px; }
+.hero .molly { font-size:4.6rem; line-height:1; display:inline-block; animation:bob 2.4s ease-in-out infinite; }
+.hero h2 { font-family:var(--display); font-size:2rem; margin:4px 0 0; font-weight:800; color:var(--barn); text-wrap:balance; }
+.hero p { margin:2px 0 0; color:var(--muted); font-size:1.05rem; }
+.hero p em { color:var(--grass-d); }
+.tiles { display:grid; gap:12px; }
+.tile {
+  display:flex; align-items:center; gap:14px; text-align:left; width:100%;
+  padding:14px 16px; border-radius:22px; border:none; cursor:pointer;
+  background:var(--paper); box-shadow:0 5px 0 var(--line);
+  transition:transform .12s;
+}
+.tile:active { transform:translateY(3px); box-shadow:0 2px 0 var(--line); }
+.tile .ti { font-size:2.8rem; width:64px; height:64px; display:grid; place-items:center; border-radius:18px; flex-shrink:0; }
+.tile .tt { font-family:var(--display); font-size:1.35rem; font-weight:800; line-height:1.1; }
+.tile .ts { font-size:.95rem; color:var(--muted); line-height:1.2; }
+.tile .ts em { color:var(--grass-d); }
+.ti.trace  { background:#FFF1C9; }
+.ti.corral { background:#E3F4D4; }
+.ti.path   { background:#DDEBFA; }
+.home-note { text-align:center; font-size:.9rem; color:var(--muted); }
+
+/* PROMPT */
+.prompt { text-align:center; }
+.prompt .big { font-family:var(--display); font-size:1.6rem; font-weight:800; line-height:1.15; text-wrap:balance; }
+.prompt .en  { color:var(--grass-d); font-style:italic; font-size:1.05rem; }
+.speak {
+  border:none; background:var(--paper); border-radius:999px; padding:6px 14px; font-size:1rem;
+  box-shadow:0 3px 0 var(--line); cursor:pointer; margin-top:6px; font-weight:700;
+}
+
+/* TRACE */
+.trace-wrap { position:relative; width:100%; max-width:420px; margin:0 auto; aspect-ratio:1/1; max-height:58vh; }
+.trace-wrap svg { width:100%; height:100%; display:block; touch-action:none; background:var(--paper); border-radius:28px; box-shadow:0 6px 0 var(--line); }
+.trace-hint { position:absolute; left:0; right:0; bottom:10px; text-align:center; font-size:1.8rem; pointer-events:none; }
+
+/* CORRAL */
+.field {
+  position:relative; width:100%; flex:1; min-height:380px; border-radius:28px; overflow:hidden; touch-action:none;
+  background:linear-gradient(var(--grass) 0 0) top/100% 100% no-repeat;
+  box-shadow:0 6px 0 var(--grass-d);
+}
+.pen {
+  position:absolute; left:50%; bottom:14px; transform:translateX(-50%);
+  width:64%; height:36%; border:6px solid var(--soil); border-top-style:dashed; border-radius:16px;
+  background:rgba(255,255,255,.18); display:flex; align-items:flex-start; justify-content:center;
+}
+.pen-count {
+  margin-top:-22px; background:var(--soil); color:#FFF8EC; font-family:var(--display); font-weight:800;
+  font-size:1.3rem; border-radius:999px; padding:0 16px; line-height:1.6;
+}
+.critter {
+  position:absolute; font-size:3rem; line-height:1; width:60px; height:60px; display:grid; place-items:center;
+  cursor:grab; touch-action:none; transition:transform .1s; filter:drop-shadow(0 3px 0 rgba(0,0,0,.18));
+}
+.critter.drag { transform:scale(1.25); z-index:3; cursor:grabbing; }
+.done-btn {
+  border:none; border-radius:20px; padding:14px; font-size:1.4rem; font-weight:800; font-family:var(--display);
+  background:var(--wheat); color:var(--ink); box-shadow:0 5px 0 #C99A1E; cursor:pointer;
+}
+.done-btn:active { transform:translateY(3px); box-shadow:0 2px 0 #C99A1E; }
+
+/* PATH */
+.grid {
+  display:grid; gap:6px; width:100%; max-width:380px; margin:0 auto; padding:8px; border-radius:22px;
+  background:var(--grass-d);
+}
+.cell { aspect-ratio:1/1; background:var(--grass); border-radius:12px; display:grid; place-items:center; font-size:2rem; position:relative; }
+.cell.trail::after { content:''; position:absolute; width:22%; height:22%; border-radius:50%; background:rgba(255,255,255,.65); }
+.program {
+  min-height:64px; background:var(--paper); border-radius:18px; box-shadow:0 4px 0 var(--line);
+  display:flex; flex-wrap:wrap; gap:6px; padding:8px; align-items:center;
+}
+.program .empty { color:var(--muted); font-size:1rem; padding-left:6px; }
+.chip { font-size:1.6rem; width:44px; height:44px; border-radius:12px; background:#EEF6FF; display:grid; place-items:center; }
+.chip.now { background:var(--wheat); transform:scale(1.12); }
+.pad { display:grid; grid-template-columns:repeat(4,1fr); gap:10px; }
+.pad button {
+  border:none; border-radius:18px; background:var(--paper); box-shadow:0 5px 0 var(--line);
+  font-size:2.2rem; height:72px; cursor:pointer;
+}
+.pad button:active { transform:translateY(3px); box-shadow:0 2px 0 var(--line); }
+.run-row { display:grid; grid-template-columns:1fr 2fr; gap:10px; }
+.run-row button { border:none; border-radius:18px; height:64px; font-size:1.3rem; font-weight:800; font-family:var(--display); cursor:pointer; }
+.btn-undo { background:#F3E6E1; color:var(--barn); box-shadow:0 5px 0 #DCC6BE; }
+.btn-run  { background:var(--ok); color:#fff; box-shadow:0 5px 0 #1F7438; }
+.run-row button:disabled { opacity:.5; }
+
+.word-bar { display:flex; gap:8px; justify-content:center; }
+.word-bar .wl { width:46px; height:52px; border-radius:12px; background:var(--paper); box-shadow:0 3px 0 var(--line);
+  display:grid; place-items:center; font-family:var(--display); font-size:1.8rem; font-weight:800; color:var(--muted); }
+.word-bar .wl.ok { background:#E3F4D4; color:var(--grass-d); }
+.word-bar .wl.now { background:var(--wheat); color:var(--ink); }
+.bag { margin-top:4px; font-weight:800; font-size:1.1rem; color:var(--soil); }
+.program .chip { width:38px; height:38px; font-size:1.35rem; }
+.critter { font-size:2.6rem; width:54px; height:54px; }
+.pen.pen0, .pen.pen1 { width:46%; height:38%; transform:none; left:auto; }
+.pen.pen0 { left:2.5%; border-color:#B5523B; }
+.pen.pen1 { right:2.5%; border-color:#3B6FB5; }
+.pen.pen1 .pen-count { background:#3B6FB5; }
+.pen.pen0 .pen-count { background:#B5523B; }
+.pen-count { font-size:1.05rem!important; white-space:nowrap; }
+.wl-emoji { font-size:2rem; display:grid; place-items:center; margin-left:4px; }
+.block { position:relative; font-size:1.5rem; min-width:46px; height:46px; padding:0 6px; border-radius:12px; background:#EEF6FF; display:flex; align-items:center; gap:2px; }
+.block.now { background:var(--wheat); transform:scale(1.1); }
+.block .times { font-family:var(--display); font-weight:800; font-size:1.1rem; color:var(--soil); }
+.rep { display:grid; grid-template-columns:auto repeat(4,1fr); gap:8px; align-items:center; }
+.rep span { font-size:1.8rem; }
+.rep button { border:none; border-radius:16px; height:54px; font-size:1.4rem; font-weight:800; font-family:var(--display);
+  background:#FFF1C9; color:var(--soil); box-shadow:0 4px 0 #E6CF8A; cursor:pointer; }
+.rep button:disabled { opacity:.45; }
+.rep button:active { transform:translateY(3px); box-shadow:0 1px 0 #E6CF8A; }
+/* PARENT GUIDE */
+details.guide { background:#FFF7DC; border-radius:16px; padding:8px 14px; font-size:.95rem; line-height:1.4; }
+details.guide summary { cursor:pointer; font-weight:700; color:var(--soil); }
+details.guide p { margin:6px 0 0; max-width:65ch; }
+
+/* TOAST */
+.toast {
+  position:fixed; inset:0; display:grid; place-items:center; z-index:20; background:rgba(58,42,28,.35);
+  padding:16px;
+}
+.toast[hidden] { display:none!important; }
+.toast-card {
+  background:var(--paper); border-radius:28px; padding:22px 26px; text-align:center; max-width:340px; width:100%;
+  box-shadow:0 8px 0 var(--line); animation:pop .35s ease;
+}
+.toast-card .te { font-size:4rem; line-height:1; }
+.toast-card .tm { font-family:var(--display); font-size:1.6rem; font-weight:800; margin-top:6px; text-wrap:balance; }
+.toast-card .tm2 { color:var(--grass-d); font-style:italic; }
+.toast-card button {
+  margin-top:14px; border:none; border-radius:18px; padding:12px 26px; font-size:1.3rem; font-weight:800;
+  font-family:var(--display); background:var(--ok); color:#fff; box-shadow:0 5px 0 #1F7438; cursor:pointer;
+}
+.toast-card.oops button { background:var(--barn); box-shadow:0 5px 0 #8E2E1E; }
+
+.stars { text-align:center; font-size:1.6rem; letter-spacing:2px; }
+
+@keyframes bob { 0%,100%{transform:translateY(0)} 50%{transform:translateY(-6px)} }
+@keyframes pop { 0%{transform:scale(.7);opacity:0} 80%{transform:scale(1.05)} 100%{transform:scale(1);opacity:1} }
+@keyframes pulse { 0%,100%{r:4} 50%{r:6.5} }
+@media (prefers-reduced-motion: reduce) { *,*::before,*::after { animation:none!important; transition:none!important; } }
+</style>
+</head>
+<body>
+<div class="app">
+  <div class="bar">
+    <button class="icon-btn" id="homeBtn" aria-label="Volver al inicio" hidden>🏠</button>
+    <h1 id="barTitle">🐄 Touch Farm · Nivel 3</h1>
+    <span class="round" id="roundTag" hidden></span>
+  </div>
+
+  <!-- HOME -->
+  <section class="screen" id="home">
+    <div class="hero">
+      <span class="molly">🐄</span>
+      <h2>¡Nivel 3, Elena!</h2>
+      <p>¡Ahora sos una experta! · <em>You are an expert now!</em></p>
+    </div>
+    <div class="tiles">
+      <button class="tile" data-go="trace">
+        <span class="ti trace">✍️</span>
+        <span><span class="tt">Trazar con el dedo</span><br><span class="ts">El 10 y palabras: PIG, DOG, SUN · <em>Write words</em></span></span>
+      </button>
+      <button class="tile" data-go="corral">
+        <span class="ti corral">🐑</span>
+        <span><span class="tt">Dos corrales</span><br><span class="ts">Separá y repartí en partes iguales · <em>Sort &amp; share</em></span></span>
+      </button>
+      <button class="tile" data-go="path">
+        <span class="ti path">🧭</span>
+        <span><span class="tt">El camino de Molly</span><br><span class="ts">Usá el bloque REPETIR 🔁 · <em>Use loops!</em></span></span>
+      </button>
+    </div>
+    <div class="home-note">
+      <button class="speak" id="soundTest">🔊 Probar sonido</button>
+      <div id="soundMsg" style="margin-top:6px"></div>
+    </div>
+  </section>
+
+  <!-- TRACE -->
+  <section class="screen" id="trace" hidden>
+    <div class="prompt">
+      <div class="big" id="trPrompt"></div>
+      <div class="en" id="trPromptEn"></div>
+      <button class="speak" id="trSpeak">🔊 Escuchar</button>
+    </div>
+    <div class="word-bar" id="trWord" hidden></div>
+    <div class="trace-wrap">
+      <svg id="trSvg" viewBox="0 0 100 100" aria-label="Zona para trazar"></svg>
+      <div class="trace-hint" id="trHint"></div>
+    </div>
+    <div class="run-row">
+      <button class="btn-undo" id="trReset">↺ Borrar</button>
+      <button class="btn-run" id="trSkip" style="background:var(--wheat);color:var(--ink);box-shadow:0 5px 0 #C99A1E">Saltar ▶</button>
+    </div>
+    <details class="guide">
+      <summary>👨‍👩‍👧 Para papá y mamá</summary>
+      <p><strong>Números de dos cifras y palabras con curvas.</strong> En el nivel 2 escribió COW y HEN, que tienen casi todas líneas rectas. Ahora escribe el 10 (dos cifras: un 1 y un 0, la base de las decenas que vio en los niveles 7 y 8) y palabras con letras curvas, que son las más difíciles: P, G, D, S, U.</p>
+      <p>💡 La S es la más difícil: "arriba como una C, abajo como una C dada vuelta". Al terminar cada palabra, que la lea señalando cada letra con el dedo.</p>
+    </details>
+  </section>
+
+  <!-- CORRAL -->
+  <section class="screen" id="corral" hidden>
+    <div class="prompt">
+      <div class="big" id="coPrompt"></div>
+      <div class="en" id="coPromptEn"></div>
+      <button class="speak" id="coSpeak">🔊 Escuchar</button>
+    </div>
+    <div class="field" id="coField">
+      <div class="pen pen0" id="coPen0"><span class="pen-count" id="coCount0">0</span></div>
+      <div class="pen pen1" id="coPen1"><span class="pen-count" id="coCount1">0</span></div>
+    </div>
+    <button class="done-btn" id="coDone">¡Listo! ✅</button>
+    <details class="guide">
+      <summary>👨‍👩‍👧 Para papá y mamá</summary>
+      <p><strong>Clasificar en dos grupos y repartir en partes iguales.</strong> Ahora hay dos corrales. Primero separa por tipo (todas las ovejas a un lado, todos los chanchitos al otro); después cuenta en dos grupos a la vez; y al final reparte en partes iguales: 6 gallinas en dos corrales son 3 y 3. Eso último es la primera idea de la división, sin nombrarla.</p>
+      <p>💡 Para repartir, el truco es "una para vos, una para mí": un animal a cada corral, por turnos, hasta que no quede ninguno. Después contar los dos lados y comparar.</p>
+    </details>
+  </section>
+
+  <!-- PATH -->
+  <section class="screen" id="path" hidden>
+    <div class="prompt">
+      <div class="big">Llegá al pasto 🌾 con pocos bloques</div>
+      <div class="en">Flecha + 🔁 cuántas veces · Arrow + repeat</div>
+      <div class="bag" id="paBag"></div>
+    </div>
+    <div class="grid" id="paGrid"></div>
+    <div class="program" id="paProgram"></div>
+    <div class="pad">
+      <button data-d="L" aria-label="Izquierda">⬅️</button>
+      <button data-d="U" aria-label="Arriba">⬆️</button>
+      <button data-d="D" aria-label="Abajo">⬇️</button>
+      <button data-d="R" aria-label="Derecha">➡️</button>
+    </div>
+    <div class="rep">
+      <span>🔁</span>
+      <button data-n="2">×2</button><button data-n="3">×3</button><button data-n="4">×4</button><button data-n="5">×5</button>
+    </div>
+    <div class="run-row">
+      <button class="btn-undo" id="paUndo">⌫ Borrar</button>
+      <button class="btn-run" id="paRun">▶ ¡Andá, Molly!</button>
+    </div>
+    <details class="guide">
+      <summary>👨‍👩‍👧 Para papá y mamá</summary>
+      <p><strong>Loops: el bloque REPETIR.</strong> En los niveles anteriores cada flecha era un paso. Ahora cada ronda permite pocos bloques (1, 2, 3 o 4) y para llegar hay que usar 🔁: "➡️ ×4" en vez de "➡️➡️➡️➡️". Es el concepto de bucle (loop) de la programación, el mismo de las actividades "Loops" de los niveles en la compu, pero ahora lo escribe ella.</p>
+      <p>💡 Primero que cuente los pasos con el dedo sobre la grilla: "cuatro para la derecha". Después arma el bloque: tocar ➡️ y luego ×4. Si se queda sin bloques, el juego le recuerda usar REPETIR.</p>
+    </details>
+  </section>
+</div>
+
+<div class="toast" id="toast" hidden>
+  <div class="toast-card" id="toastCard">
+    <div class="te" id="toastE"></div>
+    <div class="tm" id="toastM"></div>
+    <div class="tm2" id="toastM2"></div>
+    <button id="toastBtn">Seguir ▶</button>
+  </div>
+</div>
+
+<script>
+// ===================================================================
+// VOZ
+// ===================================================================
+var voices=[], HAS_TTS=('speechSynthesis' in window) && ('SpeechSynthesisUtterance' in window);
+function loadVoices(){ try{ voices=speechSynthesis.getVoices()||[]; }catch(e){} }
+if(HAS_TTS){ try{ loadVoices(); speechSynthesis.addEventListener('voiceschanged',loadVoices); }catch(e){} }
+function pickVoice(lang){
+  var L=lang.toLowerCase(), pre=L.slice(0,2);
+  return voices.find(function(v){return (v.lang||'').toLowerCase().replace('_','-')===L;})
+      || voices.find(function(v){return (v.lang||'').toLowerCase().indexOf(pre)===0 && v.localService;})
+      || voices.find(function(v){return (v.lang||'').toLowerCase().indexOf(pre)===0;});
+}
+function utter(text,lang){
+  var u=new SpeechSynthesisUtterance(text);
+  u.lang=lang; u.rate=.9; u.pitch=1.1; u.volume=1;
+  var v=pickVoice(lang); if(v) u.voice=v;
+  return u;
+}
+var speakTimer=null;
+// Habla una lista de [texto, idioma]. En Android, cancel() seguido de speak() en el mismo instante
+// a veces descarta el audio: por eso esperamos un momento después de cancelar.
+function speakList(list){
+  if(!HAS_TTS) return;
+  try{ speechSynthesis.cancel(); }catch(e){}
+  clearTimeout(speakTimer);
+  speakTimer=setTimeout(function(){
+    try{
+      if(!voices.length) loadVoices();
+      list.forEach(function(it){ if(it[0]) speechSynthesis.speak(utter(it[0],it[1])); });
+      speechSynthesis.resume();
+    }catch(e){}
+  },120);
+}
+function say(text,lang){ speakList([[text,lang||'es-AR']]); }
+function sayBoth(es,en){ speakList([[es,'es-AR'],[en,'en-US']]); }
+document.getElementById('soundTest').addEventListener('click',function(){
+  var m=document.getElementById('soundMsg');
+  if(!HAS_TTS){ m.innerHTML='🔇 Este navegador no tiene voz. Abrilo en <strong>Chrome</strong> (no desde WhatsApp ni Drive).'; return; }
+  loadVoices();
+  sayBoth('¡Hola Elena! Soy Molly','Hello! I am Molly');
+  var es=pickVoice('es-AR'), en=pickVoice('en-US');
+  m.textContent='Voces: '+(es?'español ✅':'español ❌')+' · '+(en?'inglés ✅':'inglés ❌')+'  — si no se escucha, subí el volumen multimedia.';
+});
+var NUM_ES=['cero','uno','dos','tres','cuatro','cinco','seis','siete','ocho','nueve','diez'];
+var NUM_EN=['zero','one','two','three','four','five','six','seven','eight','nine','ten'];
+
+// ===================================================================
+// NAVEGACIÓN + TOAST
+// ===================================================================
+var SCREENS=['home','trace','corral','path'];
+var TITLES={home:"🐄 Touch Farm · Nivel 3",trace:'✍️ Trazar',corral:'🐑 Dos corrales',path:'🧭 El camino de Molly'};
+function show(id){
+  SCREENS.forEach(function(s){ document.getElementById(s).hidden=(s!==id); });
+  document.getElementById('barTitle').textContent=TITLES[id];
+  document.getElementById('homeBtn').hidden=(id==='home');
+  document.getElementById('roundTag').hidden=(id==='home');
+  window.scrollTo(0,0);
+  if(id==='trace') trStart();
+  if(id==='corral') coStart();
+  if(id==='path') paStart();
+}
+document.querySelectorAll('[data-go]').forEach(function(b){ b.addEventListener('click',function(){ show(b.dataset.go); }); });
+document.getElementById('homeBtn').addEventListener('click',function(){ if(HAS_TTS){try{speechSynthesis.cancel();}catch(e){}} show('home'); });
+function setRound(i,n){ document.getElementById('roundTag').textContent=(i+1)+' / '+n; }
+
+var toastCb=null;
+function toast(ok,emoji,msg,msg2,btn,cb){
+  var c=document.getElementById('toastCard');
+  c.classList.toggle('oops',!ok);
+  document.getElementById('toastE').textContent=emoji;
+  document.getElementById('toastM').textContent=msg;
+  document.getElementById('toastM2').textContent=msg2||'';
+  document.getElementById('toastBtn').textContent=btn||'Seguir ▶';
+  toastCb=cb; document.getElementById('toast').hidden=false;
+}
+document.getElementById('toastBtn').addEventListener('click',function(){
+  document.getElementById('toast').hidden=true; var cb=toastCb; toastCb=null; if(cb) cb();
+});
+function finish(game,emoji){
+  toast(true,'🏆','¡Terminaste! ¡Muy bien, Elena!','You did it! '+emoji,'🏠 Volver',function(){ show('home'); });
+  sayBoth('¡Terminaste! ¡Muy bien, Elena!','Great job!');
+}
+
+// ===================================================================
+// 1. TRAZAR — nivel 3: el 10 y palabras con curvas (PIG, DOG, SUN)
+// ===================================================================
+function arc(cx,cy,r,a0,a1){ return ell(cx,cy,r,r,a0,a1); }
+function ell(cx,cy,rx,ry,a0,a1){
+  var pts=[], step=(a1>a0?12:-12);
+  for(var a=a0; (step>0? a<=a1 : a>=a1); a+=step){ var t=a*Math.PI/180; pts.push([cx+rx*Math.cos(t), cy+ry*Math.sin(t)]); }
+  var t1=a1*Math.PI/180; pts.push([cx+rx*Math.cos(t1), cy+ry*Math.sin(t1)]);
+  return pts;
+}
+var SHAPES={
+  '1':[[[38,28],[52,15],[52,86]]],
+  '0':[ell(50,50,24,35,270,-90)],
+  'P':[[[30,86],[30,16],[50,16]].concat(arc(50,34,18,-90,90).slice(1)).concat([[30,52]])],
+  'I':[[[50,16],[50,86]]],
+  'G':[arc(52,51,32,318,42).concat([[76,56],[58,56]])],
+  'D':[[[30,16],[30,86]],[[30,16],[44,16]].concat(arc(44,51,35,-90,90).slice(1)).concat([[30,86]])],
+  'O':[arc(50,50,32,270,-90)],
+  'S':[arc(50,32,18,330,90).concat(arc(50,68,18,270,510).slice(1))],
+  'U':[[[28,16],[28,62]].concat(arc(50,62,22,180,0).slice(1)).concat([[72,16]])],
+  'N':[[[28,84],[28,16],[72,84],[72,16]]],
+};
+var TRACE_ROUNDS=[
+  {word:'10',  emoji:'🔟', es:'diez', en:'ten', isNum:true},
+  {word:'PIG', emoji:'🐷', es:'chanchito', en:'pig'},
+  {word:'DOG', emoji:'🐶', es:'perro', en:'dog'},
+  {word:'SUN', emoji:'☀️', es:'sol', en:'sun'},
+];
+function densify(pl,gap){
+  var out=[pl[0]];
+  for(var i=1;i<pl.length;i++){
+    var a=pl[i-1], b=pl[i], d=Math.hypot(b[0]-a[0],b[1]-a[1]), n=Math.max(1,Math.round(d/gap));
+    for(var k=1;k<=n;k++) out.push([a[0]+(b[0]-a[0])*k/n, a[1]+(b[1]-a[1])*k/n]);
+  }
+  return out;
+}
+var tr={i:0, li:0, stroke:0, idx:0, pts:[], drawing:false, done:false};
+var svgNS='http://www.w3.org/2000/svg';
+function el(tag,attrs){ var e=document.createElementNS(svgNS,tag); for(var k in attrs) e.setAttribute(k,attrs[k]); return e; }
+function ptsStr(p){ return p.map(function(q){return q[0].toFixed(1)+','+q[1].toFixed(1);}).join(' '); }
+function curGlyph(){ return TRACE_ROUNDS[tr.i].word[tr.li]; }
+
+function trStart(){ tr.i=0; tr.li=0; trRender(); }
+function trWordBar(){
+  var R=TRACE_ROUNDS[tr.i], w=document.getElementById('trWord');
+  w.hidden=false;
+  w.innerHTML=R.word.split('').map(function(ch,k){
+    return '<span class="wl'+(k<tr.li?' ok':'')+(k===tr.li?' now':'')+'">'+(k<=tr.li?ch:'_')+'</span>';
+  }).join('')+'<span class="wl-emoji">'+R.emoji+'</span>';
+}
+function trRender(announce){
+  var R=TRACE_ROUNDS[tr.i], g=curGlyph(); setRound(tr.i,TRACE_ROUNDS.length);
+  tr.stroke=0; tr.idx=0; tr.done=false; tr.donePath=null;
+  tr.pts=SHAPES[g].map(function(s){ return densify(s,6); });
+  if(R.isNum){
+    document.getElementById('trPrompt').textContent='Escribí el número '+R.word+' · ahora el '+g;
+    document.getElementById('trPromptEn').textContent='Write number ten — '+(g==='1'?'one':'zero');
+  } else {
+    document.getElementById('trPrompt').textContent='Escribí '+R.word+' '+R.emoji+' · letra '+g;
+    document.getElementById('trPromptEn').textContent='Write the word '+R.en+' — '+R.es+' · letter '+g;
+  }
+  trWordBar();
+  var svg=document.getElementById('trSvg'); svg.innerHTML='';
+  SHAPES[g].forEach(function(s){
+    svg.appendChild(el('polyline',{points:ptsStr(s),fill:'none',stroke:'#EFE6D2','stroke-width':14,'stroke-linecap':'round','stroke-linejoin':'round'}));
+  });
+  tr.pts.forEach(function(p,si){
+    p.forEach(function(q){ svg.appendChild(el('circle',{cx:q[0],cy:q[1],r:1.3,fill:'#C9B99A'})); });
+    svg.appendChild(el('circle',{cx:p[0][0],cy:p[0][1],r:5.2,fill:si===0?'#2E9E4F':'#9CCFA9'}));
+    var t=el('text',{x:p[0][0],y:p[0][1]+2.1,'text-anchor':'middle','font-size':'6','font-weight':'800',fill:'#fff','font-family':'Arial'}); t.textContent=si+1; svg.appendChild(t);
+  });
+  tr.layer=el('g',{}); svg.appendChild(tr.layer);
+  tr.inkG=el('g',{}); svg.appendChild(tr.inkG);
+  tr.target=el('circle',{cx:0,cy:0,r:4,fill:'#F6C445',stroke:'#C99A1E','stroke-width':1});
+  tr.target.style.animation='pulse 1s infinite';
+  svg.appendChild(tr.target);
+  tr.doneSoFar=[];
+  trUpdateTarget();
+  document.getElementById('trHint').textContent='👆';
+  if(announce!==false){
+    if(tr.li===0) sayBoth(R.isNum? 'Vamos a escribir el diez: un uno y un cero' : 'Vamos a escribir '+R.es+'. '+R.word.split('').join(', '), R.en);
+    else say(R.isNum? 'Ahora el cero' : g, R.isNum?'es-AR':'en-US');
+  }
+}
+function trUpdateTarget(){
+  var p=tr.pts[tr.stroke];
+  if(!p){ tr.target.setAttribute('r',0); return; }
+  var q=p[Math.min(tr.idx,p.length-1)];
+  tr.target.setAttribute('cx',q[0]); tr.target.setAttribute('cy',q[1]);
+}
+function trPoint(ev){
+  var r=document.getElementById('trSvg').getBoundingClientRect();
+  return [(ev.clientX-r.left)/r.width*100, (ev.clientY-r.top)/r.height*100];
+}
+function trAdvance(p){
+  if(tr.done) return;
+  var pts=tr.pts[tr.stroke], R=9, moved=true;
+  while(moved && pts){
+    moved=false;
+    for(var look=0; look<3 && tr.idx+look<pts.length; look++){
+      var q=pts[tr.idx+look];
+      if(Math.hypot(p[0]-q[0],p[1]-q[1])<R){
+        for(var k=0;k<=look;k++) tr.doneSoFar.push(pts[tr.idx+k]);
+        tr.idx+=look+1; moved=true; break;
+      }
+      if(tr.idx===0) break;
+    }
+    if(tr.idx>=pts.length){
+      tr.stroke++; tr.idx=0; tr.doneSoFar.push(null);
+      pts=tr.pts[tr.stroke];
+      if(!pts){ trComplete(); return; }
+      moved=false;
+    }
+  }
+  var segs=[[]]; tr.doneSoFar.forEach(function(q){ if(q===null) segs.push([]); else segs[segs.length-1].push(q); });
+  var d=segs.filter(function(s){return s.length;}).map(function(s){ return 'M'+s.map(function(q){return q[0].toFixed(1)+' '+q[1].toFixed(1);}).join(' L'); }).join(' ');
+  if(!tr.donePath){ tr.donePath=el('path',{d:'',fill:'none',stroke:'#7BC043','stroke-width':11,'stroke-linecap':'round','stroke-linejoin':'round'}); tr.layer.appendChild(tr.donePath); }
+  tr.donePath.setAttribute('d',d);
+  trUpdateTarget();
+}
+function trNextRound(){
+  if(tr.i>=TRACE_ROUNDS.length-1) finish('trace','✍️');
+  else { tr.i++; tr.li=0; trRender(); }
+}
+function trComplete(){
+  tr.done=true; trUpdateTarget();
+  var R=TRACE_ROUNDS[tr.i];
+  document.getElementById('trHint').textContent='⭐';
+  if(tr.li<R.word.length-1){ tr.li++; trWordBar(); setTimeout(function(){ trRender(); },500); return; }
+  tr.li=R.word.length; trWordBar();
+  setTimeout(function(){
+    var last=tr.i>=TRACE_ROUNDS.length-1, btn=last?'🏆 Terminar':'Seguir ▶';
+    if(R.isNum){
+      toast(true,'🔟','¡Escribiste el 10!','ten! 1 + 0',btn,trNextRound);
+      sayBoth('¡Muy bien! Diez: un uno y un cero','ten');
+    } else {
+      toast(true,R.emoji,'¡Escribiste '+R.word+'!',R.en+' = '+R.es,btn,trNextRound);
+      sayBoth('¡Muy bien! '+R.es, R.word.split('').join(', ')+'. '+R.en);
+    }
+  },300);
+}
+(function(){
+  var svg=document.getElementById('trSvg');
+  svg.addEventListener('pointerdown',function(ev){
+    ev.preventDefault(); try{svg.setPointerCapture(ev.pointerId);}catch(e){}
+    tr.drawing=true; document.getElementById('trHint').textContent='';
+    var p=trPoint(ev);
+    tr.ink=el('polyline',{points:ptsStr([p]),fill:'none',stroke:'#3B82C4','stroke-width':3,'stroke-linecap':'round','stroke-linejoin':'round',opacity:.75});
+    tr.inkG.appendChild(tr.ink); tr.inkPts=[p];
+    trAdvance(p);
+  });
+  svg.addEventListener('pointermove',function(ev){
+    if(!tr.drawing) return; ev.preventDefault();
+    var list=ev.getCoalescedEvents?ev.getCoalescedEvents():[ev];
+    list.forEach(function(e){ var p=trPoint(e); tr.inkPts.push(p); trAdvance(p); });
+    if(tr.ink) tr.ink.setAttribute('points',ptsStr(tr.inkPts));
+  });
+  function up(){ tr.drawing=false; }
+  svg.addEventListener('pointerup',up); svg.addEventListener('pointercancel',up);
+  document.getElementById('trReset').addEventListener('click',function(){ trRender(false); });
+  document.getElementById('trSkip').addEventListener('click',trNextRound);
+  document.getElementById('trSpeak').addEventListener('click',function(){
+    var R=TRACE_ROUNDS[tr.i];
+    sayBoth(R.isNum? 'Escribí el diez. Ahora el '+(curGlyph()==='1'?'uno':'cero') : 'Escribí '+R.es+'. Ahora la letra '+curGlyph(), R.isNum? 'ten' : R.en+'. '+curGlyph());
+  });
+})();
+
+// ===================================================================
+// 2. DOS CORRALES — clasificar, contar en dos grupos y repartir en partes iguales
+// ===================================================================
+var ANIMALS={'🐑':['ovejas','sheep'],'🐔':['gallinas','hens'],'🐷':['chanchitos','pigs'],'🐄':['vaquitas','cows'],'🦆':['patitos','ducks']};
+var CORRAL=[
+  { mode:'sort',  mix:{'🐑':4,'🐷':3}, pens:['🐑','🐷'] },
+  { mode:'count', mix:{'🐑':5,'🐔':6,'🐄':2}, pens:['🐑','🐔'], n:[3,4] },
+  { mode:'share', mix:{'🐔':6}, a:'🐔' },
+  { mode:'share', mix:{'🐷':8}, a:'🐷' },
+];
+var co={i:0};
+function coStart(){ co.i=0; coRender(); }
+function coTexts(R){
+  if(R.mode==='sort'){
+    var a=ANIMALS[R.pens[0]], b=ANIMALS[R.pens[1]];
+    return ['Todas las '+a[0]+' '+R.pens[0]+' a la izquierda y todos los '+b[0]+' '+R.pens[1]+' a la derecha',
+            'Sort them: '+a[1]+' left, '+b[1]+' right',
+            'Separá los animales. Todas las '+a[0]+' en el corral de la izquierda y todos los '+b[0]+' en el de la derecha'];
+  }
+  if(R.mode==='count'){
+    var a2=ANIMALS[R.pens[0]], b2=ANIMALS[R.pens[1]];
+    return [R.n[0]+' '+a2[0]+' '+R.pens[0]+' a la izquierda y '+R.n[1]+' '+b2[0]+' '+R.pens[1]+' a la derecha',
+            NUM_EN[R.n[0]]+' '+a2[1]+' left, '+NUM_EN[R.n[1]]+' '+b2[1]+' right',
+            'Meté '+NUM_ES[R.n[0]]+' '+a2[0]+' en el corral de la izquierda y '+NUM_ES[R.n[1]]+' '+b2[0]+' en el de la derecha'];
+  }
+  var t=R.mix[R.a], nm=ANIMALS[R.a];
+  return ['Repartí las '+t+' '+nm[0]+' '+R.a+': ¡los dos corrales con la misma cantidad!',
+          'Share '+NUM_EN[t]+' '+nm[1]+' equally',
+          'Repartí las '+NUM_ES[t]+' '+nm[0]+' en los dos corrales. Los dos tienen que tener la misma cantidad'];
+}
+function coRender(){
+  var R=CORRAL[co.i]; setRound(co.i,CORRAL.length);
+  var t=coTexts(R);
+  document.getElementById('coPrompt').textContent=t[0];
+  document.getElementById('coPromptEn').textContent=t[1];
+  var f=document.getElementById('coField');
+  f.querySelectorAll('.critter').forEach(function(c){c.remove();});
+  var list=[]; Object.keys(R.mix).forEach(function(a){ for(var k=0;k<R.mix[a];k++) list.push(a); });
+  list.sort(function(){return Math.random()-.5;});
+  requestAnimationFrame(function(){
+    var W=f.clientWidth, H=f.clientHeight, top=H*0.52, placed=[];
+    list.forEach(function(a){
+      var x,y,tries=0;
+      do{ x=6+Math.random()*(W-66); y=6+Math.random()*(top-66); tries++; }
+      while(tries<90 && placed.some(function(p){return Math.hypot(p[0]-x,p[1]-y)<54;}));
+      placed.push([x,y]);
+      f.appendChild(makeCritter(a,x,y));
+    });
+    coCount();
+  });
+  sayBoth(t[2], t[1]);
+}
+function makeCritter(a,x,y){
+  var c=document.createElement('div'); c.className='critter'; c.textContent=a; c.dataset.a=a; c.dataset.pen='-1';
+  c.style.left=x+'px'; c.style.top=y+'px'; coDrag(c); return c;
+}
+// tally[pen][animal] = cantidad; pen -1 = afuera
+function coTally(){
+  var t={'-1':{},'0':{},'1':{}};
+  document.querySelectorAll('#coField .critter').forEach(function(c){
+    var p=c.dataset.pen; t[p][c.dataset.a]=(t[p][c.dataset.a]||0)+1;
+  });
+  return t;
+}
+function sumPen(o){ return Object.keys(o).reduce(function(s,k){return s+o[k];},0); }
+function coCount(){
+  var R=CORRAL[co.i], t=coTally();
+  [0,1].forEach(function(p){
+    var lbl;
+    if(R.mode==='share') lbl=R.a+' '+sumPen(t[p]);
+    else if(R.mode==='count') lbl=R.pens[p]+' '+(t[p][R.pens[p]]||0)+' / '+R.n[p];
+    else lbl=R.pens[p]+' '+(t[p][R.pens[p]]||0);
+    document.getElementById('coCount'+p).textContent=lbl;
+  });
+}
+function penOf(c){
+  var r=c.getBoundingClientRect(), cx=r.left+r.width/2, cy=r.top+r.height/2;
+  for(var p=0;p<2;p++){
+    var b=document.getElementById('coPen'+p).getBoundingClientRect();
+    if(cx>b.left && cx<b.right && cy>b.top && cy<b.bottom) return p;
+  }
+  return -1;
+}
+function coDrag(c){
+  var sx,sy,ox,oy;
+  c.addEventListener('pointerdown',function(ev){
+    ev.preventDefault(); try{c.setPointerCapture(ev.pointerId);}catch(e){}
+    sx=ev.clientX; sy=ev.clientY; ox=c.offsetLeft; oy=c.offsetTop; c.classList.add('drag');
+  });
+  c.addEventListener('pointermove',function(ev){
+    if(!c.classList.contains('drag')) return;
+    var f=document.getElementById('coField');
+    c.style.left=Math.max(0,Math.min(f.clientWidth-54, ox+ev.clientX-sx))+'px';
+    c.style.top=Math.max(0,Math.min(f.clientHeight-54, oy+ev.clientY-sy))+'px';
+  });
+  function drop(){
+    if(!c.classList.contains('drag')) return;
+    c.classList.remove('drag');
+    var was=+c.dataset.pen, now=penOf(c);
+    if(now===was) return;
+    c.dataset.pen=String(now); coCount();
+    if(now<0) return;
+    var R=CORRAL[co.i], t=coTally();
+    if(R.mode!=='share' && c.dataset.a!==R.pens[now]){
+      say('¡Ups! Ese corral es para '+ANIMALS[R.pens[now]][0], 'es-AR');
+    } else {
+      var n= R.mode==='share' ? sumPen(t[now]) : (t[now][c.dataset.a]||0);
+      say(NUM_ES[n]||String(n),'es-AR');
+    }
+  }
+  c.addEventListener('pointerup',drop); c.addEventListener('pointercancel',drop);
+}
+function coCheck(R,t){
+  if(R.mode==='sort'){
+    var outside=sumPen(t['-1']);
+    var wrong=(sumPen(t[0])-(t[0][R.pens[0]]||0))+(sumPen(t[1])-(t[1][R.pens[1]]||0));
+    if(wrong) return ['🙈','Hay un animal en el corral equivocado','Wrong pen!','Hay un animal en el corral equivocado'];
+    if(outside) return ['🤔','Todavía quedan animales afuera','Some are still outside!','Todavía quedan animales afuera'];
+    return null;
+  }
+  if(R.mode==='count'){
+    for(var p=0;p<2;p++){
+      var a=R.pens[p], ok=t[p][a]||0, bad=sumPen(t[p])-ok, side=p?'derecha':'izquierda';
+      if(bad) return ['🙈','En el corral de la '+side+' hay un animal que no va','Wrong animal!','En el corral de la '+side+' hay un animal que no va'];
+      if(ok!==R.n[p]) return [ok<R.n[p]?'🤔':'😅','En la '+side+' hay '+ok+' y pedimos '+R.n[p], ok<R.n[p]?'Need more!':'Too many!',
+                              'En el corral de la '+side+' hay '+(NUM_ES[ok]||ok)+' y pedimos '+NUM_ES[R.n[p]]];
+    }
+    return null;
+  }
+  var a0=sumPen(t[0]), a1=sumPen(t[1]), out=sumPen(t['-1']);
+  if(out) return ['🤔','Quedan '+out+' afuera: ¡hay que repartir todas!','Share them all!','Todavía quedan animales afuera. Hay que repartirlos todos'];
+  if(a0!==a1) return ['⚖️','Un corral tiene '+a0+' y el otro '+a1+': no es igual','Not the same!','Un corral tiene '+NUM_ES[a0]+' y el otro '+NUM_ES[a1]+'. Tienen que tener lo mismo'];
+  return null;
+}
+document.getElementById('coDone').addEventListener('click',function(){
+  var R=CORRAL[co.i], t=coTally(), last=co.i>=CORRAL.length-1, err=coCheck(R,t);
+  if(err){ toast(false,err[0],err[1],err[2],'Probar de nuevo',null); say(err[3],'es-AR'); return; }
+  var e, m1, m2, v;
+  if(R.mode==='share'){
+    var half=R.mix[R.a]/2;
+    e=Array(half).fill(R.a).join('')+' | '+Array(half).fill(R.a).join('');
+    m1='¡Repartiste justo! '+half+' y '+half; m2=R.mix[R.a]+' = '+half+' + '+half;
+    v='¡Perfecto! '+NUM_ES[half]+' y '+NUM_ES[half]+'. ¡Lo mismo en los dos!';
+  } else {
+    e=R.pens[0]+' | '+R.pens[1]; m1='¡Perfecto! Cada uno en su corral'; m2='Great sorting!';
+    v='¡Perfecto! Cada animal en su corral';
+  }
+  toast(true,e,m1,m2,last?'🏆 Terminar':'Seguir ▶',function(){ if(last) finish('corral','🐑'); else { co.i++; coRender(); } });
+  say(v,'es-AR');
+});
+document.getElementById('coSpeak').addEventListener('click',function(){ var t=coTexts(CORRAL[co.i]); sayBoth(t[2],t[1]); });
+
+// ===================================================================
+// 3. EL CAMINO DE MOLLY — nivel 3: bloque REPETIR (×2 ×3 ×4 ×5) y límite de bloques
+// ===================================================================
+var N=6;
+var PATHS=[
+  { start:[0,2], goal:[4,2], carrots:[],      rocks:[],                         max:1 },
+  { start:[0,5], goal:[3,2], carrots:[],      rocks:[[1,5],[1,4]],              max:2 },
+  { start:[0,0], goal:[4,4], carrots:[[4,0]], rocks:[[1,1],[2,2],[3,3]],        max:2 },
+  { start:[0,5], goal:[5,5], carrots:[[3,1]], rocks:[[2,2],[2,3],[2,4],[2,5],[3,2],[3,3],[3,4],[3,5]], max:3 },
+  { start:[0,0], goal:[5,0], carrots:[[0,3],[3,0]], rocks:[[1,0],[1,1],[1,2],[4,1],[4,2],[4,3]], max:4 },
+];
+var DIRS={U:[0,-1,'⬆️','arriba','up'],D:[0,1,'⬇️','abajo','down'],L:[-1,0,'⬅️','izquierda','left'],R:[1,0,'➡️','derecha','right']};
+// el programa es una lista de bloques {d:'R', n:3}
+var pa={i:0, prog:[], pos:null, trail:[], got:[], running:false};
+function paStart(){ pa.i=0; paRender(); }
+function paReset(){ var P=PATHS[pa.i]; pa.pos=P.start.slice(); pa.trail=[]; pa.got=[]; }
+function paRender(){
+  var P=PATHS[pa.i]; setRound(pa.i,PATHS.length);
+  pa.prog=[]; pa.running=false; paReset();
+  paDraw(); paDrawProg(-1);
+  sayBoth('Llevá a Molly al pasto usando como máximo '+NUM_ES[P.max]+(P.max===1?' bloque':' bloques')+'. Usá el botón repetir', 'Use the repeat button!');
+}
+function at(list,x,y){ return list.some(function(r){return r[0]===x&&r[1]===y;}); }
+function paDraw(){
+  var P=PATHS[pa.i], g=document.getElementById('paGrid'), h='';
+  g.style.gridTemplateColumns='repeat('+N+',1fr)';
+  for(var y=0;y<N;y++) for(var x=0;x<N;x++){
+    var c='', cls='cell';
+    if(at(pa.trail,x,y)) cls+=' trail';
+    if(x===P.goal[0]&&y===P.goal[1]) c='🌾';
+    if(at(P.carrots,x,y) && !at(pa.got,x,y)) c='🥕';
+    if(at(P.rocks,x,y)) c='🪨';
+    if(x===pa.pos[0]&&y===pa.pos[1]) c='🐄';
+    h+='<div class="'+cls+'">'+c+'</div>';
+  }
+  g.innerHTML=h;
+  var bag=P.carrots.length? '🧺 '+pa.got.length+' / '+P.carrots.length+' 🥕 · ' : '';
+  document.getElementById('paBag').textContent=bag+'🧱 bloques: '+pa.prog.length+' / '+P.max;
+}
+function paDrawProg(now){
+  var p=document.getElementById('paProgram');
+  if(!pa.prog.length){ p.innerHTML='<span class="empty">Tocá una flecha y después cuántas veces · Arrow, then how many</span>'; }
+  else p.innerHTML=pa.prog.map(function(b,i){
+    return '<span class="block'+(i===now?' now':'')+'">'+DIRS[b.d][2]+(b.n>1?'<span class="times">×'+b.n+'</span>':'')+'</span>';
+  }).join('');
+  document.getElementById('paRun').disabled=pa.running||!pa.prog.length;
+  document.getElementById('paUndo').disabled=pa.running||!pa.prog.length;
+  document.querySelectorAll('.rep button').forEach(function(b){ b.disabled=pa.running||!pa.prog.length; });
+  var P=PATHS[pa.i];
+  document.getElementById('paBag').textContent=(P.carrots.length? '🧺 '+pa.got.length+' / '+P.carrots.length+' 🥕 · ' : '')+'🧱 bloques: '+pa.prog.length+' / '+P.max;
+}
+document.querySelectorAll('.pad button').forEach(function(b){
+  b.addEventListener('click',function(){
+    if(pa.running) return;
+    var P=PATHS[pa.i];
+    if(pa.prog.length>=P.max){
+      toast(false,'🧱','¡Solo podés usar '+P.max+(P.max===1?' bloque':' bloques')+'!','Use repeat ×2 ×3…','Entendido',null);
+      say('Solo podés usar '+NUM_ES[P.max]+(P.max===1?' bloque':' bloques')+'. Usá el botón de repetir','es-AR');
+      return;
+    }
+    pa.prog.push({d:b.dataset.d, n:1}); paDrawProg(-1);
+    say(DIRS[b.dataset.d][3],'es-AR');
+  });
+});
+document.querySelectorAll('.rep button').forEach(function(b){
+  b.addEventListener('click',function(){
+    if(pa.running||!pa.prog.length) return;
+    var n=+b.dataset.n; pa.prog[pa.prog.length-1].n=n; paDrawProg(-1);
+    say(DIRS[pa.prog[pa.prog.length-1].d][3]+', '+NUM_ES[n]+' veces','es-AR');
+  });
+});
+document.getElementById('paUndo').addEventListener('click',function(){ if(pa.running) return; pa.prog.pop(); paDrawProg(-1); });
+document.getElementById('paRun').addEventListener('click',function(){
+  if(pa.running||!pa.prog.length) return;
+  var P=PATHS[pa.i]; pa.running=true; paReset(); pa.trail=[P.start.slice()]; paDraw();
+  var steps=[]; pa.prog.forEach(function(b,bi){ for(var r=0;r<b.n;r++) steps.push([b.d,bi]); });
+  var k=0;
+  function atGoal(){ return pa.pos[0]===P.goal[0]&&pa.pos[1]===P.goal[1]; }
+  function step(){
+    if(k>=steps.length) return end(atGoal()? 'nocarrot' : 'short');
+    paDrawProg(steps[k][1]);
+    var d=DIRS[steps[k][0]], nx=pa.pos[0]+d[0], ny=pa.pos[1]+d[1];
+    if(nx<0||ny<0||nx>=N||ny>=N) return end('out');
+    if(at(P.rocks,nx,ny)) return end('rock');
+    pa.pos=[nx,ny]; pa.trail.push([nx,ny]);
+    if(at(P.carrots,nx,ny) && !at(pa.got,nx,ny)){ pa.got.push([nx,ny]); say('¡Zanahoria!','es-AR'); }
+    paDraw();
+    if(atGoal() && pa.got.length===P.carrots.length) return setTimeout(function(){ end('win'); },350);
+    k++; setTimeout(step,480);
+  }
+  function end(r){
+    pa.running=false; paDrawProg(-1);
+    var last=pa.i>=PATHS.length-1;
+    if(r==='win'){
+      var total=steps.slice(0,k+1).length;
+      toast(true,'🐄🌾','¡Llegó con '+pa.prog.length+(pa.prog.length===1?' bloque':' bloques')+'!',total+' pasos con '+pa.prog.length+' bloques · loops rock!',last?'🏆 Terminar':'Seguir ▶',function(){
+        if(last) finish('path','🧭'); else { pa.i++; paRender(); }
+      });
+      sayBoth('¡Muy bien! Molly caminó '+(NUM_ES[total]||total)+' pasos con solo '+NUM_ES[pa.prog.length]+(pa.prog.length===1?' bloque':' bloques'),'Great coding!');
+      return;
+    }
+    var msg={rock:['🪨','¡Ups! Molly chocó con una piedra','Oops, a rock!'],
+             out:['🚧','¡Ups! Molly se salió de la granja','Oops, out of the farm!'],
+             nocarrot:['🥕','Llegó al pasto, pero le faltan zanahorias','Get all the carrots first!'],
+             short:['🤔','Molly no llegó. ¿Hay que repetir más veces?','Not there yet!']}[r];
+    toast(false,msg[0],msg[1],msg[2]+' — cambiá el programa','Volver a intentar',function(){ paReset(); paDraw(); });
+    say(msg[1],'es-AR');
+  }
+  step();
+});
+</script>
+</body>
+</html>

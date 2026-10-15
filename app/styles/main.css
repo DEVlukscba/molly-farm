@@ -1,0 +1,188 @@
+/* ─── MOLLY'S FARM — Shell styles ──────────────────────────────────────────
+   Paleta y base extraídas de Touch Farm 3. Estilos del shell únicamente:
+   variables, reset, .app, .bar, home screen (.hero, .tiles, .tile).
+   Los estilos de cada actividad viven en su propio módulo.
+   ──────────────────────────────────────────────────────────────────────── */
+
+:root {
+  --sky:     #DDF1FB;
+  --grass:   #7BC043;
+  --grass-d: #4E8A2A;
+  --barn:    #C8452F;
+  --wheat:   #F6C445;
+  --soil:    #6B4A2E;
+  --paper:   #FFFDF6;
+  --ink:     #3A2A1C;
+  --muted:   #7A6A58;
+  --ok:      #2E9E4F;
+  --oops:    #D9534F;
+  --line:    #E6DCC8;
+  --display: 'Baloo 2', 'Comic Sans MS', 'Chalkboard SE', 'Arial Rounded MT Bold', sans-serif;
+  --body:    'Baloo 2', 'Comic Sans MS', 'Arial Rounded MT Bold', Arial, sans-serif;
+  color-scheme: light;
+}
+
+/* ─── Reset ─── */
+[hidden]  { display: none !important; }
+*         { box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
+html,body { height: 100%; }
+
+body {
+  margin: 0;
+  background: var(--sky);
+  color: var(--ink);
+  font-family: var(--body);
+  -webkit-user-select: none;
+  user-select: none;
+  overscroll-behavior: none;
+}
+
+button { font-family: inherit; color: inherit; }
+button:focus-visible { outline: 4px solid var(--wheat); outline-offset: 2px; }
+
+/* ─── App shell ─── */
+.app {
+  min-height: 100%;
+  display: flex;
+  flex-direction: column;
+}
+
+/* ─── Top bar ─── */
+.bar {
+  position: sticky;
+  top: env(safe-area-inset-top, 0px);
+  z-index: 5;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 10px 16px;
+  background: var(--barn);
+  color: #FFF8EC;
+  box-shadow: 0 3px 0 rgba(0,0,0,.12);
+}
+.bar h1 {
+  font-family: var(--display);
+  font-size: 1.25rem;
+  margin: 0;
+  flex: 1;
+  line-height: 1.1;
+  font-weight: 800;
+}
+.bar .back-btn {
+  width: 48px; height: 48px;
+  border-radius: 14px;
+  border: none;
+  background: rgba(255,255,255,.2);
+  font-size: 1.5rem;
+  display: grid;
+  place-items: center;
+  cursor: pointer;
+  color: #FFF8EC;
+}
+
+/* ─── Screens ─── */
+.screen {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  padding: 14px 16px 20px;
+  gap: 12px;
+  max-width: 560px;
+  width: 100%;
+  margin: 0 auto;
+}
+
+/* ─── Home: hero ─── */
+.hero {
+  text-align: center;
+  padding-top: 6px;
+}
+.hero .molly {
+  font-size: 4.6rem;
+  line-height: 1;
+  display: inline-block;
+  animation: bob 2.4s ease-in-out infinite;
+}
+.hero h2 {
+  font-family: var(--display);
+  font-size: 2rem;
+  margin: 4px 0 0;
+  font-weight: 800;
+  color: var(--barn);
+}
+.hero p {
+  margin: 2px 0 0;
+  color: var(--muted);
+  font-size: 1.05rem;
+}
+.hero p em { color: var(--grass-d); }
+
+/* ─── Home: activity tiles ─── */
+.tiles { display: grid; gap: 12px; }
+
+.tile {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  text-align: left;
+  width: 100%;
+  padding: 14px 16px;
+  border-radius: 22px;
+  border: none;
+  cursor: pointer;
+  background: var(--paper);
+  box-shadow: 0 5px 0 var(--line);
+  transition: transform .12s;
+}
+.tile:active {
+  transform: translateY(3px);
+  box-shadow: 0 2px 0 var(--line);
+}
+
+.tile-icon {
+  font-size: 2.8rem;
+  width: 64px; height: 64px;
+  display: grid;
+  place-items: center;
+  border-radius: 18px;
+  flex-shrink: 0;
+}
+.tile-label {
+  font-family: var(--display);
+  font-size: 1.35rem;
+  font-weight: 800;
+  line-height: 1.1;
+}
+.tile-sub {
+  font-size: .95rem;
+  color: var(--muted);
+  line-height: 1.2;
+}
+.tile-sub em { color: var(--grass-d); }
+
+/* ─── Placeholder activity screen ─── */
+.placeholder {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 16px;
+  text-align: center;
+  padding: 32px 24px;
+}
+.placeholder .ph-emoji { font-size: 5rem; }
+.placeholder h2 {
+  font-family: var(--display);
+  font-size: 1.6rem;
+  font-weight: 800;
+  color: var(--barn);
+  margin: 0;
+}
+.placeholder p { color: var(--muted); margin: 0; }
+
+/* ─── Animations ─── */
+@keyframes bob {
+  0%,100% { transform: translateY(0);    }
+  50%      { transform: translateY(-10px); }
+}

@@ -1,0 +1,865 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>🐄 Molly's Math & Code Farm — Nivel 3</title>
+<style>
+:root {
+  --green:  #2E7D32; --lt-green:  #E8F5E9;
+  --brown:  #5D4037; --lt-brown:  #EFEBE9;
+  --yellow: #F9A825; --lt-yellow: #FFFDE7;
+  --orange: #E65100; --lt-orange: #FFF3E0;
+  --blue:   #1565C0; --lt-blue:   #E3F2FD;
+  --pink:   #C2185B; --lt-pink:   #FCE4EC;
+  --purple: #6A1B9A; --lt-purple: #F3E5F5;
+  --red:    #B71C1C; --lt-red:    #FFEBEE;
+  --teal:   #00695C; --lt-teal:   #E0F2F1;
+  --cream:  #FFFDE7;
+  --accent: #D84315;   /* Nivel 3: warm orange-red */
+  --lt-acc: #FBE9E7;
+}
+* { box-sizing:border-box; margin:0; padding:0; }
+body {
+  font-family:'Arial Rounded MT Bold','Comic Sans MS',Arial,sans-serif;
+  background:linear-gradient(135deg,#FBE9E7 0%,#FFFDE7 50%,#E8F5E9 100%);
+  min-height:100vh; padding-bottom:40px;
+}
+
+/* HEADER */
+#header {
+  background:linear-gradient(90deg,#BF360C,#E64A19);
+  color:white; padding:12px 20px;
+  display:flex; align-items:center; justify-content:space-between;
+  box-shadow:0 3px 8px rgba(0,0,0,.22);
+  position:sticky; top:0; z-index:100;
+}
+#header h1 { font-size:1.2em; }
+#stars-bar  { display:flex; gap:4px; align-items:center; }
+.star { font-size:1.6em; filter:grayscale(1) opacity(.4); transition:all .3s; }
+.star.lit { filter:none; transform:scale(1.2); }
+#score-text { color:#FFE0B2; font-size:.9em; margin-left:8px; }
+
+/* SCREENS */
+.screen { display:none; max-width:780px; margin:24px auto; padding:0 16px; }
+.screen.active { display:block; }
+
+/* CARD */
+.card {
+  background:white; border-radius:24px; padding:28px 24px;
+  box-shadow:0 6px 24px rgba(0,0,0,.1);
+  text-align:center; position:relative; overflow:hidden;
+}
+.card::before { content:''; position:absolute; top:0; left:0; right:0; height:6px; }
+.act-patterns  .card::before { background:linear-gradient(90deg,#E91E63,#FF9800); }
+.act-subtract  .card::before { background:linear-gradient(90deg,#BF360C,#FF7043); }
+.act-space     .card::before { background:linear-gradient(90deg,#2E7D32,#66BB6A); }
+.act-mixed     .card::before { background:linear-gradient(90deg,#E65100,#FFA000); }
+.act-ifelse    .card::before { background:linear-gradient(90deg,#1565C0,#7B1FA2); }
+.act-loops     .card::before { background:linear-gradient(90deg,#00695C,#26A69A); }
+.act-truefalse .card::before { background:linear-gradient(90deg,#C2185B,#F06292); }
+.act-debug     .card::before { background:linear-gradient(90deg,#B71C1C,#EF5350); }
+
+/* BADGES */
+.act-badge {
+  display:inline-block; padding:6px 18px; border-radius:20px;
+  font-size:.85em; font-weight:bold; color:white; margin-bottom:10px;
+}
+.act-patterns  .act-badge { background:#E91E63; }
+.act-subtract  .act-badge { background:#BF360C; }
+.act-space     .act-badge { background:#2E7D32; }
+.act-mixed     .act-badge { background:#E65100; }
+.act-ifelse    .act-badge { background:#1565C0; }
+.act-loops     .act-badge { background:#00695C; }
+.act-truefalse .act-badge { background:#C2185B; }
+.act-debug     .act-badge { background:#B71C1C; }
+.level-badge {
+  position:absolute; top:14px; right:16px;
+  background:linear-gradient(135deg,#BF360C,#FF7043);
+  color:white; border-radius:12px; padding:4px 12px; font-size:.78em; font-weight:bold;
+}
+
+/* PROGRESS */
+.progress-bar { background:#EEE; border-radius:10px; height:10px; margin:10px 0 18px; overflow:hidden; }
+.progress-fill { height:100%; background:linear-gradient(90deg,#FF7043,#FDD835); border-radius:10px; transition:width .4s; }
+
+/* QUESTION TEXT */
+.question-text { font-size:1.2em; color:#333; margin-bottom:16px; line-height:1.4; }
+.question-text .es { color:var(--brown); }
+.question-text .en { color:var(--accent); font-size:.88em; }
+.emoji-row { font-size:2.4em; letter-spacing:4px; margin:14px 0; line-height:1.3; }
+.emoji-big { font-size:5em; display:block; margin:10px 0; }
+.blank-slot {
+  display:inline-block; width:60px; height:60px;
+  background:var(--lt-yellow); border:3px dashed var(--yellow);
+  border-radius:12px; vertical-align:middle; font-size:.9em; line-height:60px; color:#AAA;
+}
+
+/* OPTIONS */
+.options { display:flex; gap:12px; justify-content:center; flex-wrap:wrap; margin-top:16px; }
+.opt-btn {
+  padding:14px 20px; font-size:1.4em; border-radius:16px;
+  border:3px solid transparent; cursor:pointer; transition:all .18s;
+  background:var(--lt-yellow); min-width:80px; font-family:inherit;
+}
+.opt-btn:hover { transform:scale(1.08); box-shadow:0 4px 12px rgba(0,0,0,.15); }
+.opt-btn.correct { background:#C8E6C9!important; border-color:#388E3C!important; transform:scale(1.1); }
+.opt-btn.wrong   { background:#FFCDD2!important; border-color:#C62828!important; }
+.opt-btn:disabled { cursor:default; }
+
+/* GROWING PATTERNS */
+.growing-seq { display:flex; gap:10px; justify-content:center; align-items:flex-end; flex-wrap:wrap; margin:14px 0; }
+.grow-box {
+  background:var(--lt-pink); border:2px solid #F48FB1; border-radius:14px;
+  padding:10px 12px; font-size:1.8em; min-width:60px; text-align:center; line-height:1.2;
+}
+.grow-box.blank { background:var(--lt-yellow); border:3px dashed var(--yellow); color:#AAA; font-size:1em; line-height:3; }
+.grow-opts { display:flex; gap:12px; justify-content:center; flex-wrap:wrap; margin-top:14px; }
+.grow-opt {
+  background:var(--lt-yellow); border:3px solid #FFD54F; border-radius:14px;
+  padding:10px 14px; font-size:1.6em; cursor:pointer; transition:all .18s; font-family:inherit;
+}
+.grow-opt:hover { transform:scale(1.08); border-color:var(--yellow); }
+.grow-opt.correct { background:#C8E6C9!important; border-color:#388E3C!important; }
+.grow-opt.wrong   { background:#FFCDD2!important; border-color:#C62828!important; }
+
+/* SUBTRACTION */
+.sub-row { display:flex; gap:8px; justify-content:center; flex-wrap:wrap; margin:14px 0; font-size:2.4em; line-height:1.2; }
+.sub-animal { transition:all .3s; }
+.sub-animal.leaving { opacity:.25; position:relative; }
+.sub-animal.leaving::after {
+  content:'❌'; position:absolute; top:-6px; right:-6px; font-size:.5em;
+}
+.sub-arrow { font-size:1.4em; color:var(--red); margin:6px 0; }
+.sub-leaving-label {
+  font-size:.85em; color:var(--red); font-weight:bold; margin-bottom:4px;
+}
+.sub-box {
+  background:var(--lt-red); border:3px solid #EF9A9A; border-radius:16px;
+  padding:14px 20px; display:inline-block; margin:10px 0;
+}
+
+/* SPACE GRID */
+.space-grid {
+  display:grid; grid-template-columns:repeat(3,80px); grid-template-rows:repeat(3,70px);
+  gap:6px; margin:14px auto; width:fit-content;
+}
+.grid-cell {
+  background:var(--lt-blue); border:2px solid #90CAF9; border-radius:12px;
+  display:flex; align-items:center; justify-content:center; font-size:2.2em;
+}
+.grid-cell.active { background:#E8F5E9; border-color:#66BB6A; }
+.grid-labels { display:grid; grid-template-columns:repeat(3,80px); gap:6px; margin:0 auto 4px; width:fit-content; text-align:center; font-size:.75em; color:#888; }
+
+/* MIXED SUMS */
+.mixed-row { font-size:2.2em; margin:14px 0; }
+.op-minus { color:var(--red); }
+.op-plus  { color:var(--green); }
+
+/* IF / ELSE */
+.if-condition {
+  background:var(--lt-blue); border:3px solid #90CAF9; border-radius:18px;
+  padding:16px 24px; font-size:1.3em; font-weight:bold; color:var(--blue);
+  margin:12px 0; display:inline-block;
+}
+.if-label { font-size:.85em; color:#888; margin-bottom:4px; }
+.if-opts  { display:flex; gap:16px; justify-content:center; margin-top:14px; flex-wrap:wrap; }
+.if-btn {
+  padding:16px 24px; font-size:1.3em; border-radius:18px;
+  border:3px solid #DDD; cursor:pointer; background:var(--lt-yellow);
+  transition:all .18s; font-family:inherit; min-width:140px;
+}
+.if-btn:hover { transform:scale(1.07); border-color:#FFD54F; }
+.if-btn.correct { background:#C8E6C9!important; border-color:#388E3C!important; }
+.if-btn.wrong   { background:#FFCDD2!important; border-color:#C62828!important; }
+
+/* LOOP GRID */
+.loop-grid { display:flex; flex-direction:column; gap:6px; margin:12px 0; }
+.loop-row  {
+  display:flex; align-items:center; gap:8px;
+  background:var(--lt-teal); border:2px solid #80CBC4;
+  border-radius:12px; padding:8px 14px;
+}
+.loop-iter { font-size:.85em; color:var(--teal); font-weight:bold; min-width:28px; }
+.loop-sounds { font-size:1.3em; letter-spacing:2px; }
+.loop-total-row {
+  background:var(--teal); color:white; border-radius:12px;
+  padding:10px 14px; font-weight:bold; font-size:1.05em;
+  display:flex; align-items:center; gap:8px; justify-content:center;
+}
+
+/* TRUE/FALSE */
+.tf-btn {
+  padding:18px 32px; font-size:1.4em; font-weight:bold; border-radius:20px;
+  border:3px solid transparent; cursor:pointer; transition:all .18s; font-family:inherit; min-width:140px;
+}
+.tf-btn:hover { transform:scale(1.07); }
+.tf-btn.true-btn  { background:var(--lt-green);  color:var(--green); border-color:var(--green); }
+.tf-btn.false-btn { background:var(--lt-red);    color:var(--red);   border-color:var(--red); }
+.tf-btn.correct   { background:#C8E6C9!important; border-color:#388E3C!important; }
+.tf-btn.wrong     { background:#FFCDD2!important; border-color:#C62828!important; }
+.and-box {
+  display:flex; gap:12px; justify-content:center; align-items:center; flex-wrap:wrap; margin:14px 0;
+}
+.cond-pill {
+  background:var(--lt-purple); border:3px solid #CE93D8;
+  border-radius:14px; padding:10px 18px; font-size:1.5em; font-weight:bold; color:var(--purple);
+}
+.and-connector {
+  background:var(--purple); color:white; border-radius:10px;
+  padding:6px 14px; font-size:.95em; font-weight:bold;
+}
+
+/* DEBUG */
+.debug-steps { display:flex; flex-direction:column; gap:10px; margin:14px 0; text-align:left; }
+.debug-step {
+  display:flex; align-items:center; gap:12px;
+  padding:12px 16px; background:var(--lt-orange);
+  border:3px solid #FFCC80; border-radius:14px;
+  cursor:pointer; transition:all .18s; font-size:1.0em;
+}
+.debug-step:hover { border-color:var(--orange); transform:translateX(4px); }
+.debug-step .step-num  { font-size:1.3em; font-weight:bold; color:var(--orange); min-width:28px; }
+.debug-step .step-emoji { font-size:1.8em; }
+.debug-step .step-text  { flex:1; color:#333; }
+.debug-step.correct { background:#C8E6C9; border-color:var(--green); }
+.debug-step.wrong   { background:#FFCDD2; border-color:var(--red); }
+
+/* PARENT GUIDE */
+.parent-guide-toggle {
+  display:inline-flex; align-items:center; gap:6px;
+  background:#FFF8E1; border:2px solid #FFD54F; border-radius:12px;
+  padding:7px 16px; font-size:.88em; color:#5D4037;
+  cursor:pointer; margin-bottom:10px; font-family:inherit; transition:all .18s;
+}
+.parent-guide-toggle:hover { background:#FFE082; }
+.parent-guide-box {
+  background:#FFFDE7; border:2px solid #FFD54F; border-radius:16px;
+  padding:14px 16px; margin-bottom:14px; text-align:left;
+  font-size:.87em; line-height:1.55; color:#4E342E; display:none;
+}
+.parent-guide-box.open { display:block; }
+.parent-guide-box strong { color:#E65100; }
+.parent-guide-box .tip {
+  margin-top:8px; padding:8px 12px;
+  background:#E8F5E9; border-left:4px solid #388E3C;
+  border-radius:0 10px 10px 0; color:#1B5E20; font-style:italic;
+}
+
+/* FEEDBACK */
+#feedback {
+  font-size:1.3em; font-weight:bold; padding:12px 20px;
+  border-radius:14px; margin:14px 0; display:none; animation:popIn .3s ease;
+}
+#feedback.correct { background:#C8E6C9; color:var(--green); }
+#feedback.wrong   { background:#FFCDD2; color:var(--red); }
+@keyframes popIn { 0%{transform:scale(.7);opacity:0} 80%{transform:scale(1.06)} 100%{transform:scale(1);opacity:1} }
+
+/* NAV */
+.nav-row { display:flex; gap:12px; justify-content:center; margin-top:18px; }
+.nav-btn {
+  padding:12px 28px; font-size:1.0em; font-weight:bold;
+  border-radius:14px; border:none; cursor:pointer; font-family:inherit; transition:all .18s;
+}
+.nav-btn:hover { transform:translateY(-2px); box-shadow:0 4px 10px rgba(0,0,0,.15); }
+.btn-next    { background:var(--accent); color:white; }
+.btn-prev    { background:#EEE; color:#555; }
+.btn-restart { background:var(--yellow); color:var(--brown); }
+.btn-next:disabled { background:#CCC; cursor:default; transform:none; box-shadow:none; }
+
+/* WELCOME */
+#welcome-screen .card { background:linear-gradient(135deg,#FBE9E7,#FFFDE7,#E8F5E9); }
+.welcome-title { font-size:2.2em; color:var(--accent); margin-bottom:6px; }
+.level-pill {
+  display:inline-block;
+  background:linear-gradient(135deg,#BF360C,#FF7043);
+  color:white; border-radius:20px; padding:6px 20px; font-size:1em; margin:8px 0 14px;
+}
+.activity-list { display:grid; grid-template-columns:1fr 1fr; gap:10px; margin:16px 0; text-align:left; }
+.act-item { padding:10px 14px; border-radius:14px; font-size:.93em; color:#333; }
+.start-btn {
+  background:linear-gradient(135deg,#BF360C,#FF7043);
+  color:white; border:none; padding:18px 50px; font-size:1.35em; font-weight:bold;
+  border-radius:20px; cursor:pointer; margin-top:10px; font-family:inherit;
+  transition:all .2s; box-shadow:0 4px 14px rgba(191,54,12,.4);
+}
+.start-btn:hover { transform:scale(1.05); }
+
+/* FINAL */
+#final-screen .card { background:linear-gradient(135deg,#FBE9E7,#C8E6C9,#E1F5FE); }
+.final-big   { font-size:4em; margin:10px 0; }
+.final-title { font-size:2em; font-weight:bold; color:var(--accent); }
+.final-sub   { font-size:1.1em; color:var(--brown); margin:10px 0; }
+.medals      { font-size:2.4em; letter-spacing:8px; margin:14px 0; }
+#confetti-canvas { position:fixed; top:0; left:0; width:100%; height:100%; pointer-events:none; z-index:9999; }
+</style>
+</head>
+<body>
+<canvas id="confetti-canvas"></canvas>
+
+<div id="header">
+  <h1>🐄 Molly's Math &amp; Code Farm — 🔥 Nivel 3</h1>
+  <div id="stars-bar">
+    <span class="star" id="s1">⭐</span><span class="star" id="s2">⭐</span>
+    <span class="star" id="s3">⭐</span><span class="star" id="s4">⭐</span>
+    <span class="star" id="s5">⭐</span><span class="star" id="s6">⭐</span>
+    <span class="star" id="s7">⭐</span><span class="star" id="s8">⭐</span>
+    <span id="score-text">0 / 0</span>
+  </div>
+</div>
+
+<!-- WELCOME -->
+<div id="welcome-screen" class="screen active">
+  <div class="card">
+    <div class="welcome-title">🐄 ¡Nivel 3, Elena! 🔥</div>
+    <div class="level-pill">🔥 NIVEL 3 / LEVEL 3 🔥</div>
+    <div style="font-size:.95em;color:var(--brown);margin-bottom:8px">¡Seguimos creciendo con Molly! / Let's keep growing with Molly!</div>
+    <span style="font-size:3.2em;display:block;margin:8px 0">🐄🌟🐷🌟🐑🌟🐔</span>
+    <div class="activity-list">
+      <div class="act-item" style="background:#FCE4EC">📈 Patrones Crecientes <span style="font-size:.8em;color:#888">nuevo</span></div>
+      <div class="act-item" style="background:#FFEBEE">➖ Resta Visual <span style="font-size:.8em;color:#888">nuevo</span></div>
+      <div class="act-item" style="background:#E8F5E9">🗺️ Grilla de Posiciones <span style="font-size:.8em;color:#888">nuevo</span></div>
+      <div class="act-item" style="background:#FFF3E0">➕➖ Sumas y Restas <span style="font-size:.8em;color:#888">+difícil</span></div>
+      <div class="act-item" style="background:#E3F2FD">🔀 SI... ENTONCES (IF) <span style="font-size:.8em;color:#888">nuevo</span></div>
+      <div class="act-item" style="background:#E0F2F1">🔁 Loops con Grilla <span style="font-size:.8em;color:#888">reforzado</span></div>
+      <div class="act-item" style="background:#FCE4EC">🔗 V/F con Y (AND) <span style="font-size:.8em;color:#888">+difícil</span></div>
+      <div class="act-item" style="background:#FFEBEE">🐛 Debug Lógico <span style="font-size:.8em;color:#888">+difícil</span></div>
+    </div>
+    <button class="start-btn" onclick="startGame()">¡Empezar Nivel 3! 🚀🔥</button>
+  </div>
+</div>
+
+<!-- GAME -->
+<div id="game-screen" class="screen">
+  <div id="activity-container"></div>
+  <div id="feedback"></div>
+  <div class="nav-row">
+    <button class="nav-btn btn-prev" onclick="prevActivity()">◀ Atrás</button>
+    <button class="nav-btn btn-next" id="next-btn" onclick="nextQuestion()" disabled>Siguiente ▶</button>
+  </div>
+</div>
+
+<!-- FINAL -->
+<div id="final-screen" class="screen">
+  <div class="card">
+    <div class="final-big">🏆🔥🏆</div>
+    <div class="final-title">¡NIVEL 3 COMPLETADO! 🔥</div>
+    <div class="level-pill">🔥 NIVEL 3 COMPLETE 🔥</div>
+    <div class="medals" id="final-medals">⭐⭐⭐⭐⭐⭐⭐⭐</div>
+    <div class="final-sub" id="final-msg"></div>
+    <span style="font-size:3em;display:block;margin:14px 0">🐄🌟🐷🌟🐑🌟🐔🌟🐴</span>
+    <div class="final-sub">¡Molly está súper orgullosa de vos! 🐄🔥<br>Molly is so proud of you!</div>
+    <div class="nav-row">
+      <button class="nav-btn btn-restart" onclick="restartGame()">🔄 Jugar de nuevo</button>
+    </div>
+  </div>
+</div>
+
+<script>
+// ===================================================================
+// DATA — NIVEL 3
+// ===================================================================
+const ACTIVITIES = [
+
+  // ─── 1. PATRONES CRECIENTES ───────────────────────────────────
+  {
+    id:'patterns', type:'growing',
+    badge:'📈 Matemáticas · Patrones Crecientes',
+    title:'¿Cuántos vienen ahora? / How many come next?',
+    sub:'El patrón crece con cada paso / The pattern grows each step',
+    guide:{
+      concept:'<strong>¿Qué es un patrón creciente?</strong> A diferencia de los patrones que repiten (🔴🔵🔴🔵), un patrón creciente agrega elementos en cada paso siguiendo una regla. Esto es la base de las <em>series numéricas</em> y de conceptos como tablas de multiplicar: 1×2, 2×2, 3×2...',
+      tip:'"Mirá, primero hay 1 vaca. Después hay 2. Después hay 3. ¿Qué está pasando? ¿Cuántas van a venir ahora?" Ayudá a Elena a verbalizar la regla antes de responder. La capacidad de nombrar el patrón refuerza mucho más que solo reconocerlo visualmente.'
+    },
+    questions:[
+      { seq:['🐄','🐄🐄','🐄🐄🐄'],           opts:['🐄🐄🐄🐄','🐄🐄','🐄🐄🐄🐄🐄'],     ans:0 },
+      { seq:['⭐','⭐⭐','⭐⭐⭐'],               opts:['⭐⭐⭐⭐','⭐⭐','⭐⭐⭐⭐⭐'],         ans:0 },
+      { seq:['🍎','🍎🍎','🍎🍎🍎'],             opts:['🍎🍎🍎🍎','🍎','🍎🍎🍎🍎🍎'],       ans:0 },
+      { seq:['🔴','🔴🔴','🔴🔴🔴','🔴🔴🔴🔴'], opts:['🔴🔴🔴🔴🔴','🔴🔴🔴','🔴🔴🔴🔴🔴🔴'], ans:0 },
+    ]
+  },
+
+  // ─── 2. RESTA VISUAL ──────────────────────────────────────────
+  {
+    id:'subtract', type:'subtract',
+    badge:'➖ Matemáticas · Resta Visual',
+    title:'¿Cuántos quedan? / How many are left?',
+    sub:'Algunos animales se van... ¿cuántos se quedan? / Some animals leave... how many stay?',
+    guide:{
+      concept:'<strong>La resta de forma visual.</strong> Antes de usar el símbolo "−", la resta se entiende como "quitar". Ver los animales que se van (tachados) y contar los que quedan es la manera más concreta de entender la sustracción. Esto prepara el terreno para la operación formal más adelante.',
+      tip:'"Había 5 vacas. Se fueron 2 (señalá las tachadas). ¿Cuántas se quedaron?" Si Elena duda, pedile que cuente solo las vacas brillantes. Evitá decirle "5 menos 2" por ahora; usá "se fueron" o "se quitaron" — el lenguaje concreto antes del abstracto.'
+    },
+    questions:[
+      { animal:'🐄', total:5, leaving:2, opts:[2,3,4], ans:3 },
+      { animal:'🐷', total:6, leaving:4, opts:[1,2,3], ans:2 },
+      { animal:'🐑', total:7, leaving:3, opts:[3,4,5], ans:4 },
+      { animal:'🐔', total:8, leaving:5, opts:[2,3,4], ans:3 },
+    ]
+  },
+
+  // ─── 3. GRILLA DE POSICIONES ──────────────────────────────────
+  {
+    id:'space', type:'grid',
+    badge:'🗺️ Matemáticas · Grilla de Posiciones',
+    title:'¿Dónde está Molly en la grilla? / Where is Molly in the grid?',
+    sub:'Mirá la grilla y respondé / Look at the grid and answer',
+    guide:{
+      concept:'<strong>Las coordenadas.</strong> Una grilla es la forma más simple de introducir el concepto de coordenadas (usado en mapas, GPS, planillas de cálculo y programación). En este ejercicio Elena practica identificar posiciones en una cuadrícula 3×3: arriba/medio/abajo y izquierda/centro/derecha.',
+      tip:'Antes de arrancar, practicá con una hoja de papel dibujando una grilla 3×3. Colocá un objeto y preguntale "¿Arriba o abajo? ¿Izquierda o derecha?" Que lo diga en voz alta. En el juego, hacelo paso a paso: primero fila, luego columna.'
+    },
+    questions:[
+      { grid:[[0,0,0],[0,1,0],[0,0,0]], q:'¿Está Molly en el CENTRO? / Is Molly in the CENTER?', ans:true  },
+      { grid:[[1,0,0],[0,0,0],[0,0,0]], q:'¿Está Molly ARRIBA a la DERECHA? / Is Molly top-RIGHT?', ans:false },
+      { grid:[[0,0,0],[0,0,0],[0,0,1]], q:'¿Está Molly ABAJO a la DERECHA? / Is Molly bottom-RIGHT?', ans:true  },
+      { grid:[[0,1,0],[0,0,0],[0,0,0]], q:'¿Está Molly ARRIBA en el CENTRO? / Is Molly top-CENTER?', ans:true  },
+    ]
+  },
+
+  // ─── 4. SUMAS Y RESTAS MIXTAS ─────────────────────────────────
+  {
+    id:'mixed', type:'mixed',
+    badge:'➕➖ Matemáticas · Sumas y Restas',
+    title:'Suma o resta / Add or subtract',
+    sub:'Mirá el símbolo: ➕ es sumar, ➖ es restar / Watch the symbol',
+    guide:{
+      concept:'<strong>Combinar sumas y restas.</strong> Este ejercicio introduce el símbolo "−" de manera formal por primera vez. El desafío cognitivo es leer el operador antes de actuar: ¿sumo o resto? Esta flexibilidad operacional es fundamental para el razonamiento matemático.',
+      tip:'Señalá el símbolo con el dedo antes de que Elena calcule: "¿Ves este signo? Es ➕, así que sumamos. ¿Cuántos hay en total?" Para la resta: "Este es ➖. Significa que se van algunos. ¿Cuántos quedan?" Que identifique el operador antes de resolver.'
+    },
+    questions:[
+      { a:['🐄','🐄','🐄'], op:'+', b:['🐄','🐄'],           opts:[4,5,6],  ans:5  },
+      { a:['🐷','🐷','🐷','🐷','🐷'], op:'−', b:['🐷','🐷'],  opts:[2,3,4],  ans:3  },
+      { a:['🐑','🐑','🐑'], op:'+', b:['🐑','🐑','🐑','🐑'], opts:[6,7,8],  ans:7  },
+      { a:['🐔','🐔','🐔','🐔','🐔','🐔'], op:'−', b:['🐔','🐔','🐔'], opts:[2,3,4], ans:3 },
+    ]
+  },
+
+  // ─── 5. IF / ELSE ─────────────────────────────────────────────
+  {
+    id:'ifelse', type:'ifelse',
+    badge:'🔀 Programación · SI... ENTONCES (IF)',
+    title:'SI la condición es verdadera, ¿qué hace Molly?',
+    sub:'IF the condition is true, what should Molly do?',
+    guide:{
+      concept:'<strong>¿Qué es un IF/ELSE?</strong> Es la instrucción más fundamental de la programación: "SI pasa X, ENTONCES haz Y; SI NO, haz Z". Todo programa tiene cientos o miles de estas decisiones. A los 4 años se puede entender perfectamente de forma cotidiana: SI llueve → paraguas. Este ejercicio construye el razonamiento condicional.',
+      tip:'"Mirá la pantalla. ¿Qué pasa en la imagen? (llueve / hay sol). Ahora, SI pasa eso, ¿qué debería hacer Molly?" Antes de cada pregunta, podés hacerlo en la vida real: "SI está lloviendo ahora, ¿qué usamos?" Conectar la lógica del juego con la vida cotidiana refuerza el concepto.'
+    },
+    questions:[
+      {
+        cond:'☀️ Hace SOL / It\'s SUNNY',
+        prompt:'Molly debe llevar / Molly should bring:',
+        opts:['🌂','🕶️'], labels:['paraguas\numbrella','lentes de sol\nsunglasses'], ans:1
+      },
+      {
+        cond:'❄️ Hay NIEVE / It\'s SNOWY',
+        prompt:'Molly debe ponerse / Molly should wear:',
+        opts:['👙','🧥'], labels:['traje de baño\nswimsuit','abrigo\nwarm coat'], ans:1
+      },
+      {
+        cond:'🔴 Semáforo en ROJO / Traffic light RED',
+        prompt:'Molly debe / Molly should:',
+        opts:['🚶','✋'], labels:['seguir caminando\nkeep walking','parar\nstop'], ans:1
+      },
+      {
+        cond:'🌧️ Está LLOVIENDO / It\'s RAINING',
+        prompt:'Molly debe / Molly should:',
+        opts:['😎','☂️'], labels:['ponerse lentes\nput on sunglasses','usar paraguas\nuse umbrella'], ans:1
+      },
+    ]
+  },
+
+  // ─── 6. LOOPS CON GRILLA VISUAL ───────────────────────────────
+  {
+    id:'loops', type:'loops',
+    badge:'🔁 Programación · Loops con Grilla',
+    title:'¿Cuántas veces en total? / How many in total?',
+    sub:'La grilla te ayuda a ver las repeticiones / The grid helps you see the repetitions',
+    guide:{
+      concept:'<strong>Visualizar la multiplicación como grilla.</strong> Ver cada iteración del loop como una fila hace que la multiplicación sea concreta: 4 filas × 2 sonidos = 8 sonidos en total. Esta representación (filas × columnas) es exactamente la tabla de multiplicar vista como grilla, un puente fundamental hacia las matemáticas formales.',
+      tip:'Antes de responder, recorrené la grilla con el dedo: "Fila 1: MOO, MOO. Fila 2: MOO, MOO. Fila 3: MOO, MOO. Fila 4: MOO, MOO. ¿Cuántos MOO en total?" Contarlos uno por uno está perfecto a esta edad. La automatización (multiplicar directamente) vendrá sola con la práctica.'
+    },
+    questions:[
+      { animal:'🐄', sound:'MOO!',   soundCount:2, times:4, opts:[6,7,8,9],   ans:8 },
+      { animal:'🐕', sound:'WOOF!',  soundCount:3, times:3, opts:[7,8,9,10],  ans:9 },
+      { animal:'🦆', sound:'QUACK!', soundCount:2, times:5, opts:[8,9,10,11], ans:10 },
+    ]
+  },
+
+  // ─── 7. V/F CON AND ───────────────────────────────────────────
+  {
+    id:'truefalse', type:'and',
+    badge:'🔗 Programación · V/F con Y (AND)',
+    title:'¿Las DOS condiciones son verdaderas? / Are BOTH conditions true?',
+    sub:'Y (AND): solo es VERDADERO si los DOS son verdaderos / AND: only TRUE if BOTH are true',
+    guide:{
+      concept:'<strong>¿Qué es el AND lógico?</strong> En programación, AND (Y) conecta dos condiciones: el resultado es verdadero SOLO si las dos son verdaderas al mismo tiempo. Si una sola es falsa, el resultado es falso. Es la base de los filtros (buscar algo que cumpla dos requisitos a la vez) y de casi toda lógica de programas.',
+      tip:'"Las dos tienen que ser verdaderas al mismo tiempo para que el resultado sea VERDADERO. Si una está mal, el resultado es FALSO." Podés usar ejemplos físicos: "SI es de noche Y tenés hambre → comés un snack. Si no es de noche O no tenés hambre → no." Evaluar cada parte por separado primero, luego combinar.'
+    },
+    questions:[
+      { c1:'3 > 2', c2:'4 > 1',   stmt:'3 > 2  Y  4 > 1',   en:'3 > 2  AND  4 > 1',   ans:true  },
+      { c1:'5 > 6', c2:'3 > 1',   stmt:'5 > 6  Y  3 > 1',   en:'5 > 6  AND  3 > 1',   ans:false },
+      { c1:'2+3=5', c2:'1+1=3',   stmt:'2+3=5  Y  1+1=3',   en:'2+3=5  AND  1+1=3',   ans:false },
+      { c1:'4+1=5', c2:'6−2=4',   stmt:'4+1=5  Y  6−2=4',   en:'4+1=5  AND  6−2=4',   ans:true  },
+    ]
+  },
+
+  // ─── 8. DEBUG LÓGICO ──────────────────────────────────────────
+  {
+    id:'debug', type:'debug',
+    badge:'🐛 Programación · Debug Lógico',
+    title:'¡Encontrá el paso equivocado! / Find the wrong step!',
+    sub:'El error es lógico: un paso que no corresponde al momento / The error is logical: a step that doesn\'t fit',
+    guide:{
+      concept:'<strong>Debug lógico.</strong> En este nivel los errores ya no son absurdos (volar a la luna) sino errores de lógica real: un paso fuera de lugar, demasiado temprano o demasiado tarde. Esto es lo que enfrentan los programadores todos los días: código que sintácticamente es correcto pero lógicamente no tiene sentido en ese orden.',
+      tip:'"Leamos todos los pasos juntos. Después de cada uno preguntate: ¿tiene sentido hacer esto en este momento?" Si Elena no encuentra el error, guiála con preguntas concretas: "¿Se puede tomar la leche si todavía no ordeñamos a Molly?", "¿Cómo ponemos los huevos en la canasta si todavía no los buscamos?" Que ella descubra la contradicción sola.'
+    },
+    questions:[
+      {
+        prompt:'🐄 Ordeñar a Molly / Milking Molly:',
+        steps:[
+          { emoji:'🧼', text:'Lavarse las manos / Wash your hands',     wrong:false },
+          { emoji:'🐄', text:'Ir al establo / Go to the barn',          wrong:false },
+          { emoji:'🥛', text:'¡Tomar la leche! / Drink the milk!',      wrong:true  },
+          { emoji:'🤲', text:'Ordeñar a Molly / Milk Molly',            wrong:false },
+        ]
+      },
+      {
+        prompt:'🥚 Recoger huevos / Collecting eggs:',
+        steps:[
+          { emoji:'🏡', text:'Ir al gallinero / Go to the henhouse',    wrong:false },
+          { emoji:'🧺', text:'Poner en canasta / Put in basket',        wrong:true  },
+          { emoji:'🔍', text:'Buscar los huevos / Look for the eggs',   wrong:false },
+          { emoji:'🚶', text:'Volver a casa / Go back home',            wrong:false },
+        ]
+      },
+      {
+        prompt:'🪣 Dar agua a los animales / Giving water to animals:',
+        steps:[
+          { emoji:'🪣', text:'Buscar el balde / Find the bucket',       wrong:false },
+          { emoji:'🐄', text:'¡Dar agua! / Give the water!',            wrong:true  },
+          { emoji:'🚿', text:'Llenar el balde / Fill the bucket',       wrong:false },
+          { emoji:'🏃', text:'Llevar al corral / Carry to the pen',     wrong:false },
+        ]
+      },
+      {
+        prompt:'🥕 Plantar zanahorias / Planting carrots:',
+        steps:[
+          { emoji:'🕳️', text:'Hacer hoyos / Dig the holes',            wrong:false },
+          { emoji:'⏳', text:'¡Esperar que crezcan! / Wait to grow!',   wrong:true  },
+          { emoji:'🥕', text:'Poner las semillas / Plant the seeds',    wrong:false },
+          { emoji:'💧', text:'Regar / Water the plants',                wrong:false },
+        ]
+      },
+    ]
+  }
+];
+
+// ===================================================================
+// STATE
+// ===================================================================
+let curAct=0, curQ=0, score=0, total=0, answered=false;
+let seqSelected=[], seqCorrectOrder=[];
+
+// ===================================================================
+// STARS
+// ===================================================================
+function updateStars(){
+  for(let i=1;i<=8;i++)
+    document.getElementById('s'+i).classList.toggle('lit', i<=score);
+  document.getElementById('score-text').textContent=score+' / '+total;
+}
+
+// ===================================================================
+// NAVIGATION
+// ===================================================================
+function showScreen(id){ document.querySelectorAll('.screen').forEach(s=>s.classList.remove('active')); document.getElementById(id).classList.add('active'); }
+function startGame(){ curAct=0;curQ=0;score=0;total=0;answered=false; updateStars(); showScreen('game-screen'); renderActivity(); }
+function restartGame(){ showScreen('welcome-screen'); }
+function prevActivity(){
+  if(curAct>0){ curAct--;curQ=0;answered=false;clearFeedback();renderActivity(); }
+  else showScreen('welcome-screen');
+}
+function nextQuestion(){
+  if(!answered) return;
+  curQ++;answered=false;clearFeedback();
+  document.getElementById('next-btn').disabled=true;
+  const act=ACTIVITIES[curAct];
+  if(curQ>=act.questions.length){ curAct++;curQ=0; if(curAct>=ACTIVITIES.length){ showFinal();return; } }
+  renderActivity();
+}
+function showFinal(){
+  showScreen('final-screen');
+  document.getElementById('final-medals').textContent='⭐'.repeat(Math.min(score,8));
+  document.getElementById('final-msg').textContent=
+    score>=total*.8?`¡Excelente! / Excellent! 🌟 ${score}/${total} correctas`
+                   :`¡Muy bien! / Great job! 🌈 ${score}/${total} correctas`;
+  launchConfetti();
+}
+function clearFeedback(){ const f=document.getElementById('feedback'); f.style.display='none'; f.className=''; }
+function showFeedback(ok,msg){
+  const f=document.getElementById('feedback');
+  f.textContent=(ok?'✅ ':'❌ ')+msg; f.className=ok?'correct':'wrong'; f.style.display='block';
+  if(ok){score++;updateStars();} total++;answered=true;
+  document.getElementById('next-btn').disabled=false;
+}
+
+// ===================================================================
+// PARENT GUIDE
+// ===================================================================
+function toggleGuide(){
+  const box=document.getElementById('guide-box'), btn=document.getElementById('guide-btn');
+  btn.textContent=box.classList.toggle('open')?'👨‍👩‍👧 Para papá y mamá  ▲':'👨‍👩‍👧 Para papá y mamá  ▼';
+}
+function renderGuide(g){
+  if(!g) return '';
+  return `<button class="parent-guide-toggle" id="guide-btn" onclick="toggleGuide()">👨‍👩‍👧 Para papá y mamá  ▼</button>
+  <div class="parent-guide-box" id="guide-box"><div>${g.concept}</div><div class="tip">💡 ${g.tip}</div></div>`;
+}
+
+// ===================================================================
+// RENDER ACTIVITY
+// ===================================================================
+function renderActivity(){
+  const act=ACTIVITIES[curAct], q=act.questions[curQ];
+  const pct=((curQ/act.questions.length)*100).toFixed(0);
+  let html=`<div class="card act-${act.id}">
+    <span class="level-badge">🔥 Nivel 3</span>
+    <span class="act-badge">${act.badge}</span>
+    <div class="progress-bar"><div class="progress-fill" style="width:${pct}%"></div></div>
+    ${renderGuide(act.guide)}
+    <div class="question-text">
+      <div class="es">${act.title}</div>
+      <div class="en" style="margin-top:4px">${act.sub}</div>
+    </div>`;
+  switch(act.type){
+    case 'growing':   html+=renderGrowing(q);   break;
+    case 'subtract':  html+=renderSubtract(q);  break;
+    case 'grid':      html+=renderGrid(q);       break;
+    case 'mixed':     html+=renderMixed(q);      break;
+    case 'ifelse':    html+=renderIfElse(q);     break;
+    case 'loops':     html+=renderLoops(q);      break;
+    case 'and':       html+=renderAnd(q);        break;
+    case 'debug':     html+=renderDebug(q);      break;
+  }
+  html+='</div>';
+  document.getElementById('activity-container').innerHTML=html;
+}
+
+// ─── GROWING PATTERNS ─────────────────────────────────────────────
+function renderGrowing(q){
+  const boxes=q.seq.map(s=>`<div class="grow-box">${s}</div>`).join('');
+  const opts=q.opts.map((o,i)=>`<button class="grow-opt" onclick="answerGrowing(${i})">${o}</button>`).join('');
+  return `<div class="growing-seq">${boxes}<div class="grow-box blank">?</div></div>
+    <div class="grow-opts">${opts}</div>`;
+}
+function answerGrowing(idx){
+  if(answered)return;
+  const q=ACTIVITIES[curAct].questions[curQ];
+  document.querySelectorAll('.grow-opt').forEach((b,i)=>{
+    b.disabled=true;
+    if(i===q.ans) b.classList.add('correct');
+    else if(i===idx) b.classList.add('wrong');
+  });
+  showFeedback(idx===q.ans, idx===q.ans?'¡Correcto! El patrón sigue creciendo 📈':`La respuesta era: ${q.opts[q.ans]}`);
+}
+
+// ─── SUBTRACTION ──────────────────────────────────────────────────
+function renderSubtract(q){
+  const animals=Array.from({length:q.total},(_, i)=>
+    `<span class="sub-animal${i<q.leaving?' leaving':''}">${q.animal}</span>`
+  ).join('');
+  const opts=q.opts.map(o=>
+    `<button class="opt-btn" style="font-size:2em;font-weight:bold" onclick="answerSubtract(${o})">${o}</button>`
+  ).join('');
+  return `<div class="sub-box">
+    <div class="sub-leaving-label">❌ Se van ${q.leaving} / ${q.leaving} leave</div>
+    <div class="sub-row">${animals}</div>
+  </div>
+  <div class="question-text es" style="margin:10px 0">¿Cuántos ${q.animal} quedan? / How many ${q.animal} are left?</div>
+  <div class="options">${opts}</div>`;
+}
+function answerSubtract(val){
+  if(answered)return;
+  const q=ACTIVITIES[curAct].questions[curQ];
+  document.querySelectorAll('.opt-btn').forEach(b=>{
+    b.disabled=true;
+    if(parseInt(b.textContent)===q.ans) b.classList.add('correct');
+    else if(parseInt(b.textContent)===val) b.classList.add('wrong');
+  });
+  showFeedback(val===q.ans,
+    val===q.ans?`¡Correcto! ${q.total} − ${q.leaving} = ${q.ans} 🌟`:`La respuesta era ${q.ans}`);
+}
+
+// ─── GRID POSITIONS ───────────────────────────────────────────────
+function renderGrid(q){
+  const rowLabels=['ARRIBA / TOP','MEDIO / MID','ABAJO / BOT'];
+  const colLabels=['IZQ\nLEFT','CTR\nCTR','DER\nRIGHT'];
+  let cells='';
+  for(let r=0;r<3;r++) for(let c=0;c<3;c++){
+    const active=q.grid[r][c]===1;
+    cells+=`<div class="grid-cell${active?' active':''}">${active?'🐄':''}</div>`;
+  }
+  const colHdr=colLabels.map(l=>`<div style="font-size:.7em;color:#888;white-space:pre-line">${l}</div>`).join('');
+  return `<div class="grid-labels">${colHdr}</div>
+    <div class="space-grid">${cells}</div>
+    <div class="question-text es" style="margin:10px 0">${q.q}</div>
+    <div class="options">
+      <button class="tf-btn true-btn"  onclick="answerTF(true)">✅ VERDADERO<br><span style="font-size:.6em">TRUE</span></button>
+      <button class="tf-btn false-btn" onclick="answerTF(false)">❌ FALSO<br><span style="font-size:.6em">FALSE</span></button>
+    </div>`;
+}
+
+// ─── MIXED + / − ──────────────────────────────────────────────────
+function renderMixed(q){
+  const aStr=q.a.join(''), bStr=q.b.join('');
+  const opClass=q.op==='+'?'op-plus':'op-minus';
+  const opts=q.opts.map(o=>
+    `<button class="opt-btn" style="font-size:2em;font-weight:bold" onclick="answerMixed(${o})">${o}</button>`
+  ).join('');
+  return `<div class="mixed-row">${aStr} <span class="${opClass}" style="font-size:.8em">${q.op}</span> ${bStr} <span style="font-size:.8em;color:#888">=</span> <span class="blank-slot">?</span></div>
+    <div class="options">${opts}</div>`;
+}
+function answerMixed(val){
+  if(answered)return;
+  const q=ACTIVITIES[curAct].questions[curQ];
+  document.querySelectorAll('.opt-btn').forEach(b=>{
+    b.disabled=true;
+    if(parseInt(b.textContent)===q.ans) b.classList.add('correct');
+    else if(parseInt(b.textContent)===val) b.classList.add('wrong');
+  });
+  showFeedback(val===q.ans,
+    val===q.ans?`¡Correcto! ${q.a.length} ${q.op} ${q.b.length} = ${q.ans} 🌟`:`La respuesta era ${q.ans}`);
+}
+
+// ─── IF / ELSE ────────────────────────────────────────────────────
+function renderIfElse(q){
+  const btns=q.opts.map((o,i)=>
+    `<button class="if-btn" onclick="answerIfElse(${i})">
+      <div style="font-size:1.8em">${o}</div>
+      <div style="font-size:.55em;color:#555;margin-top:4px;white-space:pre-line">${q.labels[i]}</div>
+    </button>`
+  ).join('');
+  return `<div class="if-label">SI / IF:</div>
+    <div class="if-condition">${q.cond}</div>
+    <div class="question-text es" style="margin:8px 0">${q.prompt}</div>
+    <div class="if-opts">${btns}</div>`;
+}
+function answerIfElse(idx){
+  if(answered)return;
+  const q=ACTIVITIES[curAct].questions[curQ];
+  document.querySelectorAll('.if-btn').forEach((b,i)=>{
+    b.disabled=true;
+    if(i===q.ans) b.classList.add('correct');
+    else if(i===idx) b.classList.add('wrong');
+  });
+  showFeedback(idx===q.ans,'¡Correcto! / Correct! 🔀🌟');
+}
+
+// ─── LOOPS WITH GRID ──────────────────────────────────────────────
+function renderLoops(q){
+  const rows=Array.from({length:q.times},(_,i)=>
+    `<div class="loop-row">
+      <span class="loop-iter">${i+1}.</span>
+      <span class="loop-sounds">${Array(q.soundCount).fill(q.animal+' '+q.sound).join('  ')}</span>
+    </div>`
+  ).join('');
+  const opts=q.opts.map(o=>
+    `<button class="opt-btn" style="font-size:2em;font-weight:bold" onclick="answerLoop(${o})">${o}</button>`
+  ).join('');
+  return `<div class="loop-grid">${rows}
+    <div class="loop-total-row">🔢 Total de "${q.sound}" = ?</div>
+  </div>
+  <div class="options">${opts}</div>`;
+}
+function answerLoop(val){
+  if(answered)return;
+  const q=ACTIVITIES[curAct].questions[curQ];
+  document.querySelectorAll('.opt-btn').forEach(b=>{
+    b.disabled=true;
+    if(parseInt(b.textContent)===q.ans) b.classList.add('correct');
+    else if(parseInt(b.textContent)===val) b.classList.add('wrong');
+  });
+  showFeedback(val===q.ans,
+    val===q.ans?`¡Correcto! ${q.soundCount} × ${q.times} = ${q.ans} 🌟`:`La respuesta era ${q.ans} (${q.soundCount} × ${q.times})`);
+}
+
+// ─── AND ──────────────────────────────────────────────────────────
+function renderAnd(q){
+  return `<div class="and-box">
+    <div class="cond-pill">${q.c1}</div>
+    <div class="and-connector">Y / AND</div>
+    <div class="cond-pill">${q.c2}</div>
+  </div>
+  <div class="question-text" style="margin:10px 0">
+    <div class="es">"${q.stmt}"</div>
+    <div class="en">"${q.en}"</div>
+  </div>
+  <div class="options">
+    <button class="tf-btn true-btn"  onclick="answerTF(true)">✅ VERDADERO<br><span style="font-size:.6em">TRUE</span></button>
+    <button class="tf-btn false-btn" onclick="answerTF(false)">❌ FALSO<br><span style="font-size:.6em">FALSE</span></button>
+  </div>`;
+}
+
+// ─── TRUE/FALSE (shared) ──────────────────────────────────────────
+function answerTF(choice){
+  if(answered)return;
+  const q=ACTIVITIES[curAct].questions[curQ];
+  document.querySelectorAll('.tf-btn,.opt-btn').forEach(b=>b.disabled=true);
+  document.querySelectorAll('.tf-btn').forEach(b=>{
+    if(b.classList.contains('true-btn')  && q.ans===true)  b.classList.add('correct');
+    if(b.classList.contains('false-btn') && q.ans===false) b.classList.add('correct');
+    if(b.classList.contains('true-btn')  && choice===true  && q.ans!==true)  b.classList.add('wrong');
+    if(b.classList.contains('false-btn') && choice===false && q.ans!==false) b.classList.add('wrong');
+  });
+  showFeedback(choice===q.ans,
+    choice===q.ans?'¡Correcto! / Correct! 🌟':`Era ${q.ans?'VERDADERO ✅':'FALSO ❌'}`);
+}
+
+// ─── DEBUG ────────────────────────────────────────────────────────
+function renderDebug(q){
+  const steps=q.steps.map((s,i)=>
+    `<div class="debug-step" id="dbg-${i}" onclick="answerDebug(${i})">
+      <span class="step-num">${i+1}</span>
+      <span class="step-emoji">${s.emoji}</span>
+      <span class="step-text">${s.text}</span>
+    </div>`
+  ).join('');
+  return `<div class="question-text es" style="margin:8px 0">${q.prompt}</div>
+    <div class="debug-steps">${steps}</div>
+    <div style="font-size:.88em;color:#888;margin-top:4px">🖱️ Hacé clic en el paso equivocado / Click the wrong step</div>`;
+}
+function answerDebug(idx){
+  if(answered)return;
+  const q=ACTIVITIES[curAct].questions[curQ];
+  document.querySelectorAll('.debug-step').forEach((el,i)=>{
+    el.style.pointerEvents='none';
+    if(q.steps[i].wrong) el.classList.add('correct');
+    else if(i===idx)      el.classList.add('wrong');
+  });
+  showFeedback(q.steps[idx].wrong,
+    q.steps[idx].wrong?'¡Encontraste el error lógico! 🐛✅':'¡Casi! El paso equivocado está marcado.');
+}
+
+// ─── CONFETTI ─────────────────────────────────────────────────────
+function launchConfetti(){
+  const cv=document.getElementById('confetti-canvas'),ctx=cv.getContext('2d');
+  cv.width=window.innerWidth; cv.height=window.innerHeight;
+  const ps=Array.from({length:150},()=>({
+    x:Math.random()*cv.width, y:Math.random()*-cv.height,
+    r:Math.random()*8+4, c:`hsl(${Math.random()*360},90%,60%)`,
+    speed:Math.random()*4+2, angle:Math.random()*360, spin:(Math.random()-.5)*5
+  }));
+  let fr=0;
+  (function draw(){
+    ctx.clearRect(0,0,cv.width,cv.height);
+    ps.forEach(p=>{
+      ctx.save(); ctx.translate(p.x,p.y); ctx.rotate(p.angle*Math.PI/180);
+      ctx.fillStyle=p.c; ctx.fillRect(-p.r/2,-p.r/2,p.r,p.r*1.5); ctx.restore();
+      p.y+=p.speed; p.angle+=p.spin; if(p.y>cv.height) p.y=-20;
+    });
+    if(++fr<240) requestAnimationFrame(draw);
+    else ctx.clearRect(0,0,cv.width,cv.height);
+  })();
+}
+</script>
+</body>
+</html>
