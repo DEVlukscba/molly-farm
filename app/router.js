@@ -1,3 +1,6 @@
+import { render as renderMath  } from './activities/math.js';
+import { render as renderTouch } from './activities/touch.js';
+
 export const ACTIVITIES = [
   {
     id: 'math',
@@ -6,14 +9,7 @@ export const ACTIVITIES = [
     color: '#2E7D32',
     tileBackground: '#E8F5E9',
     sub: { es: 'Números, sumas y más', en: 'Numbers, sums and more' },
-    render(root) {
-      root.innerHTML = `
-        <div class="placeholder">
-          <div class="ph-emoji">🔢</div>
-          <h2>Matemáticas / Math</h2>
-          <p>¡Próximamente! / Coming soon!</p>
-        </div>`;
-    }
+    render: renderMath,
   },
   {
     id: 'touch',
@@ -22,19 +18,13 @@ export const ACTIVITIES = [
     color: '#C8452F',
     tileBackground: '#FDECEA',
     sub: { es: 'Trazar, contar y explorar', en: 'Trace, count and explore' },
-    render(root) {
-      root.innerHTML = `
-        <div class="placeholder">
-          <div class="ph-emoji">🐄</div>
-          <h2>La Granja / The Farm</h2>
-          <p>¡Próximamente! / Coming soon!</p>
-        </div>`;
-    }
+    render: renderTouch,
   }
 ];
 
 const homeRoot     = document.getElementById('home-root');
 const activityRoot = document.getElementById('activity-root');
+const backBtn      = document.getElementById('back-btn');
 
 function parseHash() {
   const hash = location.hash.replace(/^#\/?/, '');
@@ -44,6 +34,7 @@ function parseHash() {
 function showHome() {
   activityRoot.hidden = true;
   homeRoot.hidden = false;
+  if (backBtn) backBtn.hidden = true;
 }
 
 function showActivity(id) {
@@ -54,6 +45,7 @@ function showActivity(id) {
   }
   homeRoot.hidden = true;
   activityRoot.hidden = false;
+  if (backBtn) backBtn.hidden = false;
   activity.render(activityRoot);
 }
 
@@ -66,6 +58,10 @@ export function Router(renderHome) {
     } else {
       showActivity(id);
     }
+  }
+
+  if (backBtn) {
+    backBtn.addEventListener('click', () => { location.hash = '#/'; });
   }
 
   window.addEventListener('hashchange', route);
