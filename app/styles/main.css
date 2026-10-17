@@ -268,6 +268,273 @@ button:focus-visible { outline: 4px solid var(--wheat); outline-offset: 2px; }
   transition: width .3s;
 }
 
+/* ─── Home footer (settings link) ─── */
+.home-footer {
+  text-align: center;
+  padding: 8px 0 4px;
+}
+.home-settings-btn {
+  background: none;
+  border: none;
+  color: var(--muted);
+  font-size: .85rem;
+  cursor: pointer;
+  padding: 6px 12px;
+  border-radius: 12px;
+  opacity: .6;
+}
+.home-settings-btn:active { opacity: 1; }
+
+/* ─── Profile flow screens ─── */
+.pf-screen { gap: 16px; }
+
+.pf-back-btn {
+  align-self: flex-start;
+  background: none;
+  border: none;
+  color: var(--muted);
+  font-size: .95rem;
+  cursor: pointer;
+  padding: 4px 0;
+}
+
+.pf-form {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.pf-name-input {
+  font-family: var(--body);
+  font-size: 1.4rem;
+  font-weight: 700;
+  padding: 14px 18px;
+  border: 3px solid var(--line);
+  border-radius: 18px;
+  background: var(--paper);
+  color: var(--ink);
+  outline: none;
+  text-align: center;
+}
+.pf-name-input:focus { border-color: var(--wheat); }
+
+.pf-emoji-label {
+  font-size: .9rem;
+  color: var(--muted);
+  text-align: center;
+}
+
+.pf-emoji-grid {
+  display: grid;
+  grid-template-columns: repeat(6, 1fr);
+  gap: 8px;
+}
+
+.pf-emoji-btn {
+  font-size: 1.6rem;
+  padding: 6px;
+  border-radius: 14px;
+  border: 3px solid transparent;
+  background: var(--paper);
+  cursor: pointer;
+  line-height: 1;
+  transition: border-color .1s, transform .1s;
+}
+.pf-emoji-btn.selected { border-color: var(--barn); transform: scale(1.15); }
+.pf-emoji-btn:active   { transform: scale(.95); }
+
+.pf-primary-btn {
+  font-family: var(--display);
+  font-size: 1.2rem;
+  font-weight: 800;
+  padding: 14px;
+  border-radius: 20px;
+  border: none;
+  background: var(--barn);
+  color: #FFF8EC;
+  cursor: pointer;
+  box-shadow: 0 5px 0 #8B2A1A;
+  transition: transform .1s;
+}
+.pf-primary-btn:active:not([disabled]) { transform: translateY(4px); box-shadow: 0 1px 0 #8B2A1A; }
+.pf-primary-btn[disabled] { opacity: .4; cursor: default; }
+.pf-secondary-btn { background: var(--grass); box-shadow: 0 5px 0 #3E6B1A; }
+.pf-secondary-btn:active { box-shadow: 0 1px 0 #3E6B1A; }
+
+/* ─── Profile cards (selector) ─── */
+.pf-cards {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 12px;
+  justify-content: center;
+}
+
+.pf-card {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 6px;
+  padding: 18px 24px;
+  border-radius: 24px;
+  border: none;
+  background: var(--paper);
+  box-shadow: 0 6px 0 var(--line);
+  cursor: pointer;
+  min-width: 110px;
+  transition: transform .1s;
+}
+.pf-card:active { transform: translateY(4px); box-shadow: 0 2px 0 var(--line); }
+
+.pf-card-emoji { font-size: 3rem; line-height: 1; }
+
+.pf-card-name {
+  font-family: var(--display);
+  font-size: 1.1rem;
+  font-weight: 800;
+  color: var(--ink);
+}
+
+.pf-footer {
+  display: flex;
+  justify-content: center;
+  margin-top: 4px;
+}
+
+.pf-parent-btn {
+  background: none;
+  border: 2px solid var(--line);
+  border-radius: 14px;
+  padding: 10px 20px;
+  font-family: var(--body);
+  font-size: .95rem;
+  color: var(--muted);
+  cursor: pointer;
+}
+.pf-parent-btn:active { background: var(--line); }
+
+/* ─── PIN pad ─── */
+.pin-wrap {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 20px;
+}
+
+.pin-dots {
+  display: flex;
+  gap: 16px;
+}
+
+.pin-dot {
+  width: 20px; height: 20px;
+  border-radius: 50%;
+  border: 3px solid var(--line);
+  background: transparent;
+  transition: background .15s, border-color .15s;
+}
+.pin-dot.filled { background: var(--barn); border-color: var(--barn); }
+
+.pin-pad {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 10px;
+  width: 100%;
+  max-width: 280px;
+}
+
+.pin-key {
+  font-family: var(--display);
+  font-size: 1.6rem;
+  font-weight: 800;
+  padding: 14px;
+  border-radius: 18px;
+  border: none;
+  background: var(--paper);
+  box-shadow: 0 4px 0 var(--line);
+  cursor: pointer;
+  color: var(--ink);
+  transition: transform .08s;
+}
+.pin-key:active   { transform: translateY(3px); box-shadow: 0 1px 0 var(--line); }
+.pin-key-cancel   { color: var(--oops); }
+.pin-key-del      { color: var(--muted); font-size: 1.3rem; }
+
+.pin-error {
+  font-size: .95rem;
+  color: var(--oops);
+  font-weight: 700;
+  animation: shake .3s ease;
+}
+
+@keyframes shake {
+  0%,100% { transform: translateX(0); }
+  25%      { transform: translateX(-8px); }
+  75%      { transform: translateX(8px); }
+}
+
+/* ─── Parent panel ─── */
+.panel-header {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+.panel-title {
+  font-family: var(--display);
+  font-size: 1.2rem;
+  font-weight: 800;
+  color: var(--barn);
+}
+
+.panel-section {
+  background: var(--paper);
+  border-radius: 20px;
+  padding: 14px 16px;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+.panel-section-title {
+  font-family: var(--display);
+  font-size: .85rem;
+  font-weight: 800;
+  color: var(--muted);
+  text-transform: uppercase;
+  letter-spacing: .05em;
+}
+
+.panel-profile-row {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 6px 0;
+  border-bottom: 1px solid var(--line);
+}
+.panel-profile-row:last-of-type { border-bottom: none; }
+.panel-profile-emoji { font-size: 1.4rem; }
+.panel-profile-name  { flex: 1; font-weight: 700; font-size: 1rem; }
+
+.panel-btn {
+  font-family: var(--body);
+  font-size: .8rem;
+  padding: 6px 10px;
+  border-radius: 10px;
+  border: 2px solid var(--line);
+  background: transparent;
+  cursor: pointer;
+  color: var(--muted);
+}
+.panel-btn:active      { background: var(--line); }
+.panel-btn-reset       { color: var(--ok); border-color: var(--ok); }
+.panel-btn-del         { color: var(--oops); border-color: var(--oops); }
+
+.panel-pin-row {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  flex-wrap: wrap;
+}
+.panel-pin-status { flex: 1; font-size: .95rem; color: var(--muted); }
+
 /* ─── Stub placeholder ─── */
 .lv-placeholder {
   display: flex;

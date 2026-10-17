@@ -1,4 +1,5 @@
 import { markDone } from '../progress.js';
+import { getChildName } from '../profiles.js';
 
 // ─── CSS ────────────────────────────────────────────────────────────────────
 function injectCSS() {
@@ -350,7 +351,7 @@ export function render(root) {
     <!-- WELCOME -->
     <div class="m1-scr m1-scr--on m1-screen" id="m1-welcome">
       <div class="m1-card" style="background:linear-gradient(135deg,#E8F5E9,#FFFDE7)">
-        <div class="m1-welcome-title">🌱 ¡Nivel 1, Elena!</div>
+        <div class="m1-welcome-title">🌱 ¡Nivel 1, ${getChildName()}!</div>
         <div class="m1-welcome-sub">¡Empezamos desde el principio! · Let's start from the beginning!</div>
         <span style="font-size:3rem;display:block;margin:8px 0">🐄🌾🐷🐑</span>
         <div class="m1-act-list">

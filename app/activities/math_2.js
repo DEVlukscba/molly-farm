@@ -1,4 +1,5 @@
 import { markDone } from '../progress.js';
+import { getChildName } from '../profiles.js';
 
 function injectCSS() {
   if (document.getElementById('molly-math2-css')) return;
@@ -225,7 +226,7 @@ const ACTS = [
     badge:'➕ Matemáticas · Sumas hasta 10',
     title:'¿Cuántos hay en total?',
     sub:'Contá los dos grupos y sumalos · Count both groups and add them',
-    guide:{ concept:'Consolidamos la suma con números más grandes que antes (hasta 10). Lo importante es el proceso de juntar y contar.', tip:'Si Elena duda, animala a contar con los dedos o señalar cada emoji. No hay apuro en llegar a la respuesta de memoria.' },
+    guide:{ concept:'Consolidamos la suma con números más grandes que antes (hasta 10). Lo importante es el proceso de juntar y contar.', tip:'Si duda, animala a contar con los dedos o señalar cada emoji. No hay apuro en llegar a la respuesta de memoria.' },
     questions:[
       { a:['🐄','🐄','🐄'],           b:['🐄','🐄'],            opts:[4,5,6], ans:5 },
       { a:['🐷','🐷','🐷'],           b:['🐷','🐷','🐷'],       opts:[5,6,7], ans:6 },
@@ -238,7 +239,7 @@ const ACTS = [
     badge:'🔢 Programación · Secuencias de 4 pasos',
     title:'Poné los 4 pasos en orden',
     sub:'Hacé clic de PRIMERO a CUARTO · Click from FIRST to FOURTH',
-    guide:{ concept:'Pasar de 3 a 4 pasos multiplica las combinaciones posibles y exige más razonamiento lógico.', tip:'Hablá los pasos en voz alta antes de hacer clic: que Elena cuente la historia con sus palabras primero.' },
+    guide:{ concept:'Pasar de 3 a 4 pasos multiplica las combinaciones posibles y exige más razonamiento lógico.', tip:'Hablá los pasos en voz alta antes de hacer clic: pedile que cuente la historia con sus palabras primero.' },
     questions:[
       {
         prompt:'🌱 ¿Cómo crece y se come una fruta? / How does fruit grow and get eaten?',
@@ -289,7 +290,7 @@ const ACTS = [
     badge:'✅ Programación · Comparaciones',
     title:'¿Verdadero o Falso?',
     sub:'Matemáticas y comparaciones · Math and comparisons',
-    guide:{ concept:'En código, casi toda decisión se basa en una condición verdadera o falsa. Introducimos comparaciones numéricas (3 > 2) y sumas como afirmaciones (2+2=5).', tip:'"Mayor que" puede ser difícil. Truco: el símbolo > es una boca que se come al número más grande. Para las sumas, animá a Elena a contar con los dedos.' },
+    guide:{ concept:'En código, casi toda decisión se basa en una condición verdadera o falsa. Introducimos comparaciones numéricas (3 > 2) y sumas como afirmaciones (2+2=5).', tip:'"Mayor que" puede ser difícil. Truco: el símbolo > es una boca que se come al número más grande. Para las sumas, animá a contar con los dedos.' },
     questions:[
       { visual:'math', inner:'3 > 2', ref:'', stmt:'3 es MAYOR que 2',  en:'3 is GREATER THAN 2', ans:true  },
       { visual:'math', inner:'5 < 4', ref:'', stmt:'5 es MENOR que 4',  en:'5 is LESS THAN 4',    ans:false },
@@ -371,7 +372,7 @@ export function render(root) {
     <!-- WELCOME -->
     <div class="m2-scr m2-scr--on m2-screen" id="m2-welcome">
       <div class="m2-card" style="background:linear-gradient(135deg,#F3E5F5,#FFFDE7)">
-        <div class="m2-welcome-title">🐑 ¡Nivel 2, Elena!</div>
+        <div class="m2-welcome-title">🐑 ¡Nivel 2, ${getChildName()}!</div>
         <div class="m2-welcome-sub">¡Seguimos aprendiendo con Molly! · Let's keep learning! 🌟</div>
         <span style="font-size:3rem;display:block;margin:8px 0">🐄🌾🐷🌟🐑</span>
         <div class="m2-act-list">
