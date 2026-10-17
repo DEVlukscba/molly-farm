@@ -1,4 +1,4 @@
-import { Router, LEVELS } from './router.js';
+import { Router, LEVELS, BRANCH_META } from './router.js';
 import { isUnlocked, getProgress } from './progress.js';
 
 const homeRoot = document.getElementById('home-root');
@@ -32,18 +32,16 @@ function renderHome() {
         <p>¿Qué aprendemos hoy? / <em>What do we learn today?</em></p>
       </div>
       <div class="branches">
-        <section class="branch">
-          <h3 class="branch-title">🔢 Matemáticas / <em>Math</em></h3>
-          <div class="branch-grid">
-            ${LEVELS.math.map(l => levelTileHTML('math', l)).join('')}
-          </div>
-        </section>
-        <section class="branch">
-          <h3 class="branch-title">🐄 La Granja / <em>The Farm</em></h3>
-          <div class="branch-grid">
-            ${LEVELS.touch.map(l => levelTileHTML('touch', l)).join('')}
-          </div>
-        </section>
+        ${['math','touch'].map(branch => {
+          const m = BRANCH_META[branch];
+          return `
+          <section class="branch">
+            <h3 class="branch-title">${m.emoji} ${m.label.es} / <em>${m.label.en}</em></h3>
+            <div class="branch-grid">
+              ${LEVELS[branch].map(l => levelTileHTML(branch, l)).join('')}
+            </div>
+          </section>`;
+        }).join('')}
       </div>
     </div>`;
 

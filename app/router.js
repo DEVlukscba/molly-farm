@@ -11,6 +11,11 @@ import { render as renderTouch2 } from './activities/touch_2.js';
 import { render as renderTouch3 } from './activities/touch_3.js';
 import { isUnlocked } from './progress.js';
 
+export const BRANCH_META = {
+  math:  { label: { es: 'Pensar y aprender', en: 'Think & learn' }, emoji: '🧠' },
+  touch: { label: { es: 'La Granja',          en: 'The Farm'      }, emoji: '🐄' },
+};
+
 export const LEVELS = {
   math: [
     { level:1, emoji:'🌱', label:{es:'Nivel 1',en:'Level 1'}, sub:{es:'Patrones y contar',   en:'Patterns & counting'},   totalActs:8, render:renderMath1  },
