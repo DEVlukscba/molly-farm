@@ -685,10 +685,11 @@ export function render(root) {
   // ── Final ──────────────────────────────────────────────────────────────────
   function showFinal() {
     showScr('final');
-    $('m1-medals').textContent = '⭐'.repeat(Math.min(score, 8));
-    $('m1-finalmsg').textContent = score >= 6
-      ? `¡Excelente! ${score}/8 correctas 🌟`
-      : `¡Muy bien! ${score}/8 correctas 🌈`;
+    const stars = total > 0 ? Math.round(score / total * 8) : 0;
+    $('m1-medals').textContent = '⭐'.repeat(stars);
+    $('m1-finalmsg').textContent = score >= total * 0.75
+      ? `¡Excelente! ${score}/${total} correctas 🌟`
+      : `¡Muy bien! ${score}/${total} correctas 🌈`;
     launchConfetti();
   }
 
